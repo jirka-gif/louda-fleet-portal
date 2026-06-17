@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { Icon, czk, linePath } from './helpers.jsx'
+import { Icon, czk, linePath, useViewport } from './helpers.jsx'
 import Render from './Render.jsx'
 import {
   insurersData, brandsData, fleetsData, vehiclesData, claimsData,
@@ -23,7 +23,7 @@ export default function FleetPortal() {
     route: 'dashboard',
     fleetId: 'f1', vehicleId: 'v1',
     fleetTab: 'overview', vehicleTab: 'overview',
-    search: false, notif: false, ai: false, companyMenu: false,
+    search: false, notif: false, ai: false, companyMenu: false, sidebar: false,
     claimWizard: false, claimStep: 1, claimData: {},
     rowMenu: null, toast: null,
     av: false, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avLoading: false,
@@ -40,10 +40,11 @@ export default function FleetPortal() {
     ],
   })
   const ttRef = useRef(null)
+  const vp = useViewport()
   const setState = (patch) => setStateRaw((s) => ({ ...s, ...(typeof patch === 'function' ? patch(s) : patch) }))
 
   // ---------- ACTIONS ----------
-  const navigate = (route, patch) => setState({ route, ...(patch || {}), search: false, notif: false, companyMenu: false })
+  const navigate = (route, patch) => setState({ route, ...(patch || {}), search: false, notif: false, companyMenu: false, sidebar: false })
   const openFleet = (id) => navigate('fleet-detail', { fleetId: id, fleetTab: 'overview' })
   const openVehicle = (id) => navigate('vehicle-detail', { vehicleId: id, vehicleTab: 'overview' })
   const toggleNotif = () => setState((s) => ({ notif: !s.notif, companyMenu: false }))
@@ -140,6 +141,7 @@ export default function FleetPortal() {
     res = res.slice(0, 7)
 
     return {
+      vp, sidebarOpen: state.sidebar, toggleSidebar: () => setState((s) => ({ sidebar: !s.sidebar })), closeSidebar: () => setState({ sidebar: false }),
       nav, pageTitle: title, pageSubtitle: sub, route: r,
       isDashboard: r === 'dashboard', isFleets: r === 'fleets', isFleetDetail: r === 'fleet-detail',
       isVehicles: r === 'vehicles', isVehicleDetail: r === 'vehicle-detail',
@@ -560,7 +562,7 @@ export default function FleetPortal() {
         checkIcon: on ? ic('check', 13, 2.5) : null,
         titleColor: on ? 'var(--ink)' : 'var(--ink2)',
         hasParams: on && !!params, params: params ? params.map(([label, value]) => ({ label, value })) : [],
-        rowStyle: `display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 16px;${i < coverDefs.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}background:${on ? '#FAFBFD' : '#fff'}`,
+        rowStyle: `display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 14px;padding:13px 16px;${i < coverDefs.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}background:${on ? '#FAFBFD' : '#fff'}`,
       }
     })
     const coverCount = Object.values(cov).filter(Boolean).length

@@ -1,4 +1,20 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+
+// ---------------------------------------------------------------------------
+// useViewport — track window width and derive responsive breakpoints.
+//   isMobile  < 860px  → off-canvas sidebar, single-column, condensed topbar
+//   isTablet  860–1179 → intermediate (grids already reflow via auto-fit)
+// ---------------------------------------------------------------------------
+export function useViewport() {
+  const read = () => (typeof window !== 'undefined' ? window.innerWidth : 1440)
+  const [w, setW] = useState(read)
+  useEffect(() => {
+    const onResize = () => setW(window.innerWidth)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+  return { w, isMobile: w < 860, isTablet: w >= 860 && w < 1180 }
+}
 
 // ---------------------------------------------------------------------------
 // css(str) — parse a design-style CSS declaration string into a React style
@@ -96,6 +112,7 @@ const PATHS = {
   hash: '<path d="M9 4L7 20M17 4l-2 16M4 9h16M3 15h16"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/>',
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+  menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
 }
 
 export function Icon({ name, size = 18, sw = 1.8, style }) {
