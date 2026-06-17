@@ -1,0 +1,81 @@
+// Realistic Czech fleet data — ported 1:1 from the design bundle.
+
+export const insurersData = [
+  { name: 'Kooperativa', pct: 34, color: '#2058C9' },
+  { name: 'Allianz', pct: 22, color: '#16A34A' },
+  { name: 'ČPP', pct: 18, color: '#C2780C' },
+  { name: 'Generali', pct: 14, color: '#8B5CF6' },
+  { name: 'UNIQA', pct: 7, color: '#0EA5A5' },
+  { name: 'ČSOB Poj.', pct: 5, color: '#9B0E25' },
+]
+
+export const brandsData = [
+  { name: 'Škoda', count: 119, pct: 38, color: '#2058C9' },
+  { name: 'Volkswagen', count: 59, pct: 19, color: '#3A7BE0' },
+  { name: 'Audi', count: 37, pct: 12, color: '#16A34A' },
+  { name: 'BMW', count: 28, pct: 9, color: '#C2780C' },
+  { name: 'Mercedes-Benz', count: 25, pct: 8, color: '#8B5CF6' },
+  { name: 'Ostatní', count: 44, pct: 14, color: '#A1A1AA' },
+]
+
+export const fleetsData = [
+  { id: 'f1', name: 'Praha – Centrála', manager: 'Petr Novák', vehicles: 84, premium: 4280000, claims: 12, risk: 72, insurers: ['Kooperativa', 'Allianz'], renewals: 7 },
+  { id: 'f2', name: 'Mladá Boleslav – Sklad', manager: 'Jana Dvořáková', vehicles: 56, premium: 2640000, claims: 7, risk: 64, insurers: ['ČPP', 'Generali'], renewals: 4 },
+  { id: 'f3', name: 'Brno – Pobočka', manager: 'Tomáš Svoboda', vehicles: 48, premium: 2180000, claims: 9, risk: 81, insurers: ['Kooperativa'], renewals: 11 },
+  { id: 'f4', name: 'Servisní vozy', manager: 'Martin Horák', vehicles: 32, premium: 1120000, claims: 4, risk: 58, insurers: ['UNIQA', 'ČSOB'], renewals: 2 },
+  { id: 'f5', name: 'Management & Exekutiva', manager: 'Lucie Marešová', vehicles: 18, premium: 1640000, claims: 1, risk: 91, insurers: ['Allianz'], renewals: 1 },
+  { id: 'f6', name: 'Dlouhodobý pronájem', manager: 'Jan Kučera', vehicles: 74, premium: 3050000, claims: 15, risk: 55, insurers: ['Generali', 'ČPP'], renewals: 9 },
+]
+
+export const vehiclesData = [
+  { id: 'v1', plate: '5SK 8841', brand: 'Škoda', model: 'Octavia Combi 2.0 TDI', year: 2023, driver: 'Petr Novák', fleet: 'f1', insurer: 'Kooperativa', status: 'active', premium: 18400, renewal: '14. 9. 2026', fuel: 'Diesel', vin: 'TMBJJ7NE5P0123456', mileage: '62 400 km', value: '640 000 Kč' },
+  { id: 'v2', plate: '7B2 4410', brand: 'Škoda', model: 'Superb iV', year: 2022, driver: 'Lucie Marešová', fleet: 'f5', insurer: 'Allianz', status: 'active', premium: 26800, renewal: '2. 7. 2026', fuel: 'PHEV', vin: 'TMBJG9NP7N0223344', mileage: '48 100 km', value: '880 000 Kč' },
+  { id: 'v3', plate: '4AU 1290', brand: 'Volkswagen', model: 'Passat Variant', year: 2021, driver: 'Tomáš Svoboda', fleet: 'f3', insurer: 'Kooperativa', status: 'soon', premium: 21200, renewal: '28. 6. 2026', fuel: 'Diesel', vin: 'WVWZZZ3CZME556677', mileage: '91 300 km', value: '520 000 Kč' },
+  { id: 'v4', plate: '8EX 7733', brand: 'Audi', model: 'A6 Avant 50 TDI', year: 2023, driver: 'Jan Kučera', fleet: 'f6', insurer: 'Generali', status: 'active', premium: 34500, renewal: '20. 11. 2026', fuel: 'Diesel', vin: 'WAUZZZF20PN778899', mileage: '54 700 km', value: '1 240 000 Kč' },
+  { id: 'v5', plate: '2BM 5567', brand: 'BMW', model: '320d Touring', year: 2022, driver: 'Martin Horák', fleet: 'f4', insurer: 'UNIQA', status: 'active', premium: 29900, renewal: '5. 10. 2026', fuel: 'Diesel', vin: 'WBA5E710X0G445566', mileage: '70 200 km', value: '780 000 Kč' },
+  { id: 'v6', plate: '9ME 2201', brand: 'Mercedes-Benz', model: 'E 220d', year: 2024, driver: 'Lucie Marešová', fleet: 'f5', insurer: 'Allianz', status: 'active', premium: 38200, renewal: '11. 12. 2026', fuel: 'Diesel', vin: 'W1K2130461A998877', mileage: '21 800 km', value: '1 460 000 Kč' },
+  { id: 'v7', plate: '1EV 9087', brand: 'Tesla', model: 'Model 3 Long Range', year: 2024, driver: 'Petr Novák', fleet: 'f1', insurer: 'ČPP', status: 'active', premium: 31400, renewal: '19. 8. 2026', fuel: 'Elektro', vin: '5YJ3E7EA7PF112233', mileage: '29 500 km', value: '1 120 000 Kč' },
+  { id: 'v8', plate: '3EV 4412', brand: 'Škoda', model: 'Enyaq iV 80', year: 2023, driver: 'Jana Dvořáková', fleet: 'f2', insurer: 'ČPP', status: 'active', premium: 27600, renewal: '30. 9. 2026', fuel: 'Elektro', vin: 'TMBJV9NU2P5334455', mileage: '40 100 km', value: '980 000 Kč' },
+  { id: 'v9', plate: '6HY 3320', brand: 'Hyundai', model: 'Tucson 1.6 T-GDI', year: 2021, driver: 'Tomáš Svoboda', fleet: 'f3', insurer: 'Generali', status: 'nocasco', premium: 16900, renewal: '15. 7. 2026', fuel: 'Benzín', vin: 'TMAJ3815AMJ667788', mileage: '88 900 km', value: '440 000 Kč' },
+  { id: 'v10', plate: '4VW 8800', brand: 'Volkswagen', model: 'Transporter T6.1', year: 2020, driver: 'Martin Horák', fleet: 'f4', insurer: 'ČSOB', status: 'active', premium: 23100, renewal: '28. 10. 2026', fuel: 'Diesel', vin: 'WV1ZZZ7HZLH009988', mileage: '118 400 km', value: '560 000 Kč' },
+  { id: 'v11', plate: '5KQ 1144', brand: 'Škoda', model: 'Kodiaq 2.0 TDI 4×4', year: 2022, driver: 'Jan Kučera', fleet: 'f6', insurer: 'Generali', status: 'active', premium: 24700, renewal: '8. 11. 2026', fuel: 'Diesel', vin: 'TMBJK7NS9N8112299', mileage: '66 700 km', value: '820 000 Kč' },
+  { id: 'v12', plate: '7AQ 6651', brand: 'Audi', model: 'Q5 40 TDI quattro', year: 2023, driver: 'Lucie Marešová', fleet: 'f5', insurer: 'Allianz', status: 'active', premium: 33800, renewal: '22. 12. 2026', fuel: 'Diesel', vin: 'WAUZZZFY8P2554433', mileage: '33 200 km', value: '1 180 000 Kč' },
+  { id: 'v13', plate: '2SC 7790', brand: 'Škoda', model: 'Scala 1.5 TSI', year: 2021, driver: 'Petr Novák', fleet: 'f1', insurer: 'Kooperativa', status: 'overdue', premium: 14200, renewal: '20. 6. 2026', fuel: 'Benzín', vin: 'TMBEM6NW0M3667722', mileage: '72 600 km', value: '360 000 Kč' },
+  { id: 'v14', plate: '8TY 3398', brand: 'Toyota', model: 'Corolla TS Hybrid', year: 2022, driver: 'Jana Dvořáková', fleet: 'f2', insurer: 'ČPP', status: 'active', premium: 15800, renewal: '4. 9. 2026', fuel: 'Hybrid', vin: 'SB1KW3JE10E223311', mileage: '51 900 km', value: '520 000 Kč' },
+  { id: 'v15', plate: '1IX 5520', brand: 'BMW', model: 'iX3 M Sport', year: 2024, driver: 'Jan Kučera', fleet: 'f6', insurer: 'Allianz', status: 'active', premium: 35600, renewal: '14. 1. 2027', fuel: 'Elektro', vin: 'WBAEW5104P9554477', mileage: '18 300 km', value: '1 340 000 Kč' },
+  { id: 'v16', plate: '9OC 2284', brand: 'Škoda', model: 'Octavia 1.5 TSI', year: 2020, driver: 'Tomáš Svoboda', fleet: 'f3', insurer: 'Kooperativa', status: 'nocasco', premium: 13900, renewal: '22. 7. 2026', fuel: 'Benzín', vin: 'TMBAG7NE0L0998822', mileage: '104 200 km', value: '320 000 Kč' },
+]
+
+export const claimsData = [
+  { id: 'CLM-2026-0142', vehicle: 'Škoda Octavia · 5SK 8841', vId: 'v1', type: 'Havárie – křižovatka', status: 'repair', insurer: 'Kooperativa', estimate: 84000, date: '28. 5. 2026', shop: 'AutoCentrum Praha', adjuster: 'Pavel Říha', progress: 60 },
+  { id: 'CLM-2026-0138', vehicle: 'Tesla Model 3 · 1EV 9087', vId: 'v7', type: 'Sklo – čelní', status: 'approved', insurer: 'ČPP', estimate: 12400, date: '12. 5. 2026', shop: 'AutoSklo Express', adjuster: 'Eva Horká', progress: 100 },
+  { id: 'CLM-2026-0131', vehicle: 'BMW 320d · 2BM 5567', vId: 'v5', type: 'Parkovací škoda', status: 'reported', insurer: 'UNIQA', estimate: 31500, date: '2. 6. 2026', shop: '—', adjuster: 'Nepřiřazen', progress: 10 },
+  { id: 'CLM-2026-0125', vehicle: 'VW Transporter · 4VW 8800', vId: 'v10', type: 'Krupobití', status: 'closed', insurer: 'ČSOB', estimate: 47800, date: '18. 4. 2026', shop: 'Servis MB Brno', adjuster: 'Jiří Malý', progress: 100 },
+  { id: 'CLM-2026-0119', vehicle: 'Audi A6 · 8EX 7733', vId: 'v4', type: 'Odcizení kol', status: 'liquidation', insurer: 'Generali', estimate: 58000, date: '30. 5. 2026', shop: '—', adjuster: 'Petra Nová', progress: 40 },
+  { id: 'CLM-2026-0112', vehicle: 'Hyundai Tucson · 6HY 3320', vId: 'v9', type: 'Střet se zvěří', status: 'closed', insurer: 'Generali', estimate: 26300, date: '22. 3. 2026', shop: 'AutoCentrum Brno', adjuster: 'Pavel Říha', progress: 100 },
+]
+
+export const statusMeta = {
+  active: { label: 'Aktivní', c: '#16A34A', bg: '#E7F6ED' },
+  soon: { label: 'Brzy obnova', c: '#C2780C', bg: '#FBF1DF' },
+  overdue: { label: 'Po splatnosti', c: '#C8102E', bg: '#FDECEE' },
+  nocasco: { label: 'Bez havarijního', c: '#2058C9', bg: '#EAF0FC' },
+}
+
+export const claimStatusMeta = {
+  reported: { label: 'Nahlášeno', c: '#2058C9', bg: '#EAF0FC' },
+  liquidation: { label: 'V likvidaci', c: '#C2780C', bg: '#FBF1DF' },
+  repair: { label: 'V opravě', c: '#C2780C', bg: '#FBF1DF' },
+  approved: { label: 'Schváleno', c: '#16A34A', bg: '#E7F6ED' },
+  closed: { label: 'Uzavřeno', c: '#5B5B63', bg: '#F1F1F3' },
+}
+
+export const fleetName = (id) => {
+  const f = fleetsData.find((x) => x.id === id)
+  return f ? f.name : '—'
+}
+
+export const statusChip = (s) => {
+  const m = statusMeta[s]
+  return `display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:${m.c};background:${m.bg};padding:3px 9px;border-radius:20px;white-space:nowrap`
+}
