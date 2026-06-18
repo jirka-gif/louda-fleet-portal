@@ -291,15 +291,54 @@ function Dashboard({ vm }) {
 
 /* ============================ FLEETS ============================ */
 function Fleets({ vm }) {
+  const isTable = vm.fleetsView === 'table'
+  const segBtn = (on) => `width:34px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:${on ? 'var(--ink)' : 'var(--ink3)'};background:${on ? '#fff' : 'transparent'};box-shadow:${on ? '0 1px 3px rgba(0,0,0,.08)' : 'none'}`
   return (
     <div>
-      <div style={S('display:flex;align-items:center;justify-content:space-between;margin-bottom:18px')}>
-        <div style={S('display:flex;gap:10px')}>
+      <div style={S('display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:18px')}>
+        <div style={S('display:flex;gap:10px;flex-wrap:wrap')}>
           <div style={S('display:flex;align-items:center;gap:7px;height:36px;padding:0 13px;background:#fff;border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer')}>Všechny parky <span style={S('color:var(--ink3);display:flex')}>{ic('chevron', 16)}</span></div>
           <div style={S('display:flex;align-items:center;gap:7px;height:36px;padding:0 13px;background:#fff;border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer')}>Řadit: Pojistné</div>
         </div>
-        <div style={S('display:flex;align-items:center;gap:8px;height:38px;padding:0 15px;background:var(--blue);color:#fff;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer')}>{ic('plus', 15)} Nový park</div>
+        <div style={S('display:flex;align-items:center;gap:10px')}>
+          <div style={S('display:flex;gap:2px;background:#F1F1F3;border-radius:10px;padding:3px')}>
+            <div onClick={() => vm.setFleetsView('grid')} style={S(segBtn(!isTable))} title="Dlaždice">{ic('grid', 16)}</div>
+            <div onClick={() => vm.setFleetsView('table')} style={S(segBtn(isTable))} title="Tabulka">{ic('rows', 16)}</div>
+          </div>
+          <div style={S('display:flex;align-items:center;gap:8px;height:38px;padding:0 15px;background:var(--blue);color:#fff;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer')}>{ic('plus', 15)} Nový park</div>
+        </div>
       </div>
+
+      {isTable ? (
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+          <HScroll minW={940}>
+            <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+              <div style={S('width:40px;flex-shrink:0')}></div>
+              <div style={S('flex:1;min-width:0')}>Park</div>
+              <div style={S('width:70px;text-align:right')}>Vozidla</div>
+              <div style={S('width:104px;text-align:right')}>Roční pojistné</div>
+              <div style={S('width:80px;text-align:right')}>Události</div>
+              <div style={S('width:104px')}>Rizikové skóre</div>
+              <div style={S('width:150px')}>Pojišťovny</div>
+              <div style={S('width:84px')}>Obnovy</div>
+              <div style={S('width:18px;flex-shrink:0')}></div>
+            </div>
+            {vm.fleetCards.map((f, i) => (
+              <Hov key={i} onClick={f.onClick} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer" hover="background:#FAFAFA">
+                <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('fleets', 20)}</div>
+                <div style={S('flex:1;min-width:0')}><div style={S('font-size:14px;font-weight:700;line-height:1.2')}>{f.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{f.manager}</div></div>
+                <div style={S('width:70px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums')}>{f.vehicles}</div>
+                <div style={S('width:104px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums')}>{f.premium}</div>
+                <div style={S('width:80px;text-align:right;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{f.claims}</div>
+                <div style={S('width:104px;display:flex;align-items:baseline;gap:5px')}><span style={S(`font-size:15px;font-weight:800;letter-spacing:-.3px;color:${f.riskColor}`)}>{f.risk}</span><span style={S('font-size:11px;color:var(--ink3)')}>/100</span></div>
+                <div style={S('width:150px;display:flex;gap:6px;flex-wrap:wrap')}>{f.insurers.map((insN, k) => <span key={k} style={S('font-size:11px;font-weight:600;color:var(--ink2);background:#F4F4F5;border:1px solid var(--border);padding:2px 8px;border-radius:7px')}>{insN}</span>)}</div>
+                <div style={S('width:84px')}>{f.renewalsShow ? <span style={S('font-size:11px;font-weight:700;color:var(--amber);background:var(--amber-soft);padding:3px 8px;border-radius:20px;white-space:nowrap')}>{f.renewals} obnov</span> : <span style={S('font-size:12px;color:var(--ink3)')}>—</span>}</div>
+                <span style={S('width:18px;flex-shrink:0;color:var(--ink3);display:flex')}>{ic('arrow', 16)}</span>
+              </Hov>
+            ))}
+          </HScroll>
+        </div>
+      ) : (
       <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px')}>
         {vm.fleetCards.map((f, i) => (
           <Hov key={i} onClick={f.onClick} base="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;transition:box-shadow .15s,border-color .15s" hover="border-color:#D4D4D8;box-shadow:0 8px 24px rgba(0,0,0,.06)">
@@ -328,6 +367,7 @@ function Fleets({ vm }) {
           </Hov>
         ))}
       </div>
+      )}
     </div>
   )
 }

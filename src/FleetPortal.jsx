@@ -22,7 +22,7 @@ export default function FleetPortal() {
   const [state, setStateRaw] = useState({
     route: 'dashboard',
     fleetId: 'f1', vehicleId: 'v1',
-    fleetTab: 'overview', vehicleTab: 'overview',
+    fleetTab: 'overview', vehicleTab: 'overview', fleetsView: 'grid',
     search: false, notif: false, ai: false, companyMenu: false, sidebar: false,
     claimWizard: false, claimStep: 1, claimData: {},
     rowMenu: null, toast: null,
@@ -211,7 +211,7 @@ export default function FleetPortal() {
       renewals: f.renewals, renewalsShow: f.renewals > 0, insurers: f.insurers,
       onClick: () => openFleet(f.id),
     }))
-    return { fleetCards }
+    return { fleetCards, fleetsView: state.fleetsView, setFleetsView: (v) => setState({ fleetsView: v }) }
   }
 
   const fleetDetailVM = () => {

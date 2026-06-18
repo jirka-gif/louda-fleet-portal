@@ -113,6 +113,8 @@ const PATHS = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/>',
   logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
   menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
+  rows: '<rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="14" width="18" height="4" rx="1"/>',
 }
 
 export function Icon({ name, size = 18, sw = 1.8, style }) {
