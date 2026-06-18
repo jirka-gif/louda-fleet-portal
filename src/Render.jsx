@@ -701,7 +701,6 @@ function Insurance({ vm }) {
         <div style={S('display:flex;gap:4px;background:#F1F1F3;border-radius:10px;padding:3px')}>
           {vm.insGroupTabs.map((g, i) => <div key={i} onClick={g.onClick} style={S(g.style)}>{g.label}</div>)}
         </div>
-        <div style={S('display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;background:var(--star);color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer')}>{ic('sparkle', 22)} Vygenerovat lepší nabídku</div>
       </div>
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
         <HScroll minW={680}>
