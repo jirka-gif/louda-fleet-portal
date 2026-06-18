@@ -535,7 +535,7 @@ function Vehicles({ vm }) {
         ))}
         <div style={{ flex: 1 }}></div>
         <div style={S('display:flex;align-items:center;gap:7px;height:38px;padding:0 13px;border:1px solid var(--border);background:#fff;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer')}>{ic('doc2', 16)} Export</div>
-        <div style={S('display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;background:var(--blue);color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer')}>{ic('plus', 15)} Přidat vozidlo</div>
+        <Hov onClick={vm.openAddVehicle} base="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;background:var(--blue);color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer" hover="background:#1A47A3">{ic('plus', 15)} Přidat vozidlo</Hov>
       </div>
 
       {vm.vSelCount ? (
