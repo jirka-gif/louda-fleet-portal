@@ -954,8 +954,8 @@ function BonifikaceDetail({ vm }) {
           <div style={S('display:flex;gap:16px;align-items:center')}>
             <div style={S('width:56px;height:56px;border-radius:14px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('percent', 26)}</div>
             <div>
-              <div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px')}>{bd.name}</div>
-              <div style={S('font-size:13px;color:var(--ink3);margin-top:3px')}>Flotilová smlouva č. <span style={S('color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums')}>{bd.policy}</span>, Pojistitel: <span style={S('color:var(--ink2);font-weight:600')}>{bd.insurer}</span></div>
+              <div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px')}>{bd.insurer}</div>
+              <div style={S('font-size:13px;color:var(--ink3);margin-top:3px')}>Flotilová smlouva č. <span style={S('color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums')}>{bd.policy}</span></div>
             </div>
           </div>
           <div style={S('display:flex;gap:10px;flex-wrap:wrap')}>
