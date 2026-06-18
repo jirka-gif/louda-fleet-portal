@@ -1142,6 +1142,16 @@ function AddVehicleWizard({ vm }) {
                   <div key={i}><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>{f.label}</div><input defaultValue={f.value} style={S(`width:100%;height:40px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none;background:${f.bg}`)} /></div>
                 ))}
               </div>
+              <div style={S('margin-top:18px;font-size:13.5px;font-weight:700;margin-bottom:10px')}>Zařazení do flotily</div>
+              <div style={S('display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--blue-soft);border-radius:11px')}>
+                <span style={S('color:var(--blue);display:flex;flex-shrink:0')}>{ic('fleets', 18)}</span>
+                <div style={S('flex:1;min-width:0')}>
+                  <div style={S('font-size:11.5px;font-weight:600;color:var(--blue-ink);margin-bottom:4px')}>Vozový park</div>
+                  <select value={avm.fleetId} onChange={avm.onFleetChange} style={S('width:100%;max-width:360px;height:38px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none;background:#fff;color:var(--ink);cursor:pointer')}>
+                    {avm.fleetOptions.map((o, i) => <option key={i} value={o.v}>{o.l}</option>)}
+                  </select>
+                </div>
+              </div>
               <div style={S('margin-top:18px;font-size:13.5px;font-weight:700;margin-bottom:10px')}>Pojistník a začátek pojištění</div>
               <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px')}>
                 <div><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Pojistník</div><input defaultValue="Louda Auto a.s." style={S('width:100%;height:40px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none')} /></div>

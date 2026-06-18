@@ -26,7 +26,7 @@ export default function FleetPortal() {
     search: false, notif: false, ai: false, companyMenu: false, sidebar: false,
     claimWizard: false, claimStep: 1, claimData: {},
     rowMenu: null, toast: null,
-    av: false, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avLoading: false,
+    av: false, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avLoading: false, avFleet: 'f1',
     avCover: { pr: true, hav: true, skla: true, uraz: false, zavazadla: false, zver: true, nahradni: false, strojni: false, gap: false, zivel: false, asist: true, prac: false },
     avHavRozsah: 'allrisk', avHavSpoluucast: '5% / 5 000 Kč', avPrLimit: '100 / 100 mil. Kč', avUziti: 'Běžné užití',
     vf: { fleet: 'all', brand: 'all', fuel: 'all', insurer: 'all', status: 'all', q: '' },
@@ -150,7 +150,7 @@ export default function FleetPortal() {
       toast: state.toast, rowMenuOpen: state.rowMenu !== null, closeRowMenu: () => setState({ rowMenu: null }),
       goFleets: () => navigate('fleets'),
       openClaimWizard: () => setState({ claimWizard: true, claimStep: 1, claimData: {} }),
-      av: state.av, openAddVehicle: () => setState({ av: true, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false }),
+      av: state.av, openAddVehicle: () => setState({ av: true, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avFleet: state.fleetId }),
       companyMenu: state.companyMenu, notif: state.notif, ai: state.ai, search: state.search,
       searchQuery: state.searchQuery, searchResults: res,
       aiMessages, aiChips, aiInput: state.aiInput, notifs,
@@ -512,7 +512,7 @@ export default function FleetPortal() {
   const addVehicleVM = () => {
     if (!state.av) return {}
     const step = state.avStep; const done = step > 3
-    const f = fleetsData.find((x) => x.id === state.fleetId)
+    const f = fleetsData.find((x) => x.id === state.avFleet) || fleetsData[0]
     const labels = ['Zadání vozidla', 'Údaje o vozidle', 'Pojistné krytí']
     const steps = [1, 2, 3].map((i) => ({ color: i <= step ? 'var(--blue)' : '#E8E8EB' }))
     const m = state.avMethod
@@ -576,7 +576,10 @@ export default function FleetPortal() {
       avInput: state.avInput,
       avm: {
         close: () => setState({ av: false }), stop: (e) => e.stopPropagation(),
-        fleetName: f.name, stepLabel: done ? 'Hotovo' : `Krok ${step} ze 3 · ${labels[step - 1]}`, steps,
+        fleetName: f.name, fleetId: state.avFleet,
+        fleetOptions: fleetsData.map((x) => ({ v: x.id, l: x.name })),
+        onFleetChange: (e) => setState({ avFleet: e.target.value }),
+        stepLabel: done ? 'Hotovo' : `Krok ${step} ze 3 · ${labels[step - 1]}`, steps,
         s1: step === 1, s2: step === 2, s3: step === 3, isDone: done,
         methods, isUpload: m === 'doklad', isField: m !== 'doklad',
         fieldBadge: m === 'vin' ? 'VIN' : 'CZ', fieldPlaceholder: m === 'vin' ? 'Zadejte VIN' : 'Zadejte SPZ',
