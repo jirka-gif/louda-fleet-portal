@@ -582,12 +582,12 @@ export default function FleetPortal() {
     const bonus = f.bonus || DEFAULT_BONUS
     const lr = f.lossRatio ?? 0
     const activeTier = bonus.find((x) => lr <= x.threshold)
-    const provize = Math.round(f.premium * 0.12)
+    const base = f.premium
     const tiers = bonus.map((t, i) => {
       const active = activeTier && t.threshold === activeTier.threshold
       return {
         label: `Škodní průběh do ${t.threshold} %`,
-        desc: `Pojišťovna vrací ${t.rate} % z provize`,
+        desc: `Pojišťovna vrací ${t.rate} % z pojistného`,
         rate: t.rate + ' %', active,
         badge: active ? 'Aktuální pásmo' : '',
         rowStyle: `display:flex;align-items:center;gap:14px;padding:15px 18px;${i < bonus.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}background:${active ? 'var(--green-soft)' : '#fff'}`,
@@ -596,14 +596,14 @@ export default function FleetPortal() {
       }
     })
     const activeRate = activeTier ? activeTier.rate : 0
-    const rebate = Math.round(provize * activeRate / 100)
+    const rebate = Math.round(base * activeRate / 100)
     return {
       bd: {
         name: f.name, insurer: f.insurers.join(', '), policy: f.policy || '—', policyStart: f.policyStart || '—',
         lossRatio: lr, lrColor: lrColorFor(lr), tiers,
-        provizeF: czk(provize), rebateF: czk(rebate), hasActive: !!activeTier, activeRate,
+        premiumF: czk(base), rebateF: czk(rebate), hasActive: !!activeTier, activeRate,
         note: activeTier
-          ? `Při aktuálním škodním průběhu ${lr} % spadá smlouva do pásma „do ${activeTier.threshold} %" — pojišťovna vrací ${activeTier.rate} % z provize, tj. odhadem ${czk(rebate)} ročně.`
+          ? `Při aktuálním škodním průběhu ${lr} % spadá smlouva do pásma „do ${activeTier.threshold} %" — pojišťovna vrací ${activeTier.rate} % z pojistného, tj. odhadem ${czk(rebate)} ročně.`
           : `Při aktuálním škodním průběhu ${lr} % nárok na bonifikaci nevzniká (přesahuje nejvyšší pásmo ${bonus[bonus.length - 1].threshold} %).`,
         goBack: () => navigate('bonifikace'),
       },

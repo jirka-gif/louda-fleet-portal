@@ -937,7 +937,7 @@ function Bonifikace({ vm }) {
               <div style={S('width:150px;font-size:12.5px;color:var(--ink2)')}>{b.insurer}</div>
               <div style={S('width:130px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{b.policy}</div>
               <div style={S(`width:110px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums;color:${b.lrColor}`)}>{b.lossRatio} %</div>
-              <div style={S('width:120px;text-align:right')}>{b.rateActive ? <span style={S('font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:20px')}>{b.rateLabel} z provize</span> : <span style={S('font-size:12.5px;color:var(--ink3)')}>—</span>}</div>
+              <div style={S('width:120px;text-align:right')}>{b.rateActive ? <span style={S('font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:20px')}>{b.rateLabel} z pojistného</span> : <span style={S('font-size:12.5px;color:var(--ink3)')}>—</span>}</div>
               <span style={S('width:18px;flex-shrink:0;color:var(--ink3);display:flex')}>{ic('arrow', 16)}</span>
             </Hov>
           ))}
@@ -976,7 +976,7 @@ function BonifikaceDetail({ vm }) {
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
         <div style={S('display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)')}>
           <span style={S('font-size:15px;font-weight:700')}>Nastavená pásma bonifikace</span>
-          <span style={S('font-size:12.5px;color:var(--ink3)')}>Roční provize odhadem {bd.provizeF}</span>
+          <span style={S('font-size:12.5px;color:var(--ink3)')}>Roční pojistné {bd.premiumF}</span>
         </div>
         {bd.tiers.map((t, i) => (
           <div key={i} style={S(t.rowStyle)}>
@@ -985,7 +985,7 @@ function BonifikaceDetail({ vm }) {
               <div style={S('font-size:14px;font-weight:700;display:flex;align-items:center;gap:9px;flex-wrap:wrap')}>{t.label}{t.badge ? <span style={S('font-size:10.5px;font-weight:700;color:var(--green);background:#fff;border:1px solid var(--green-soft);padding:2px 8px;border-radius:20px')}>{t.badge}</span> : null}</div>
               <div style={S('font-size:12.5px;color:var(--ink3);margin-top:2px')}>{t.desc}</div>
             </div>
-            <div style={S('text-align:right')}><div style={S(t.rateStyle)}>{t.rate}</div><div style={S('font-size:11px;color:var(--ink3)')}>z provize</div></div>
+            <div style={S('text-align:right')}><div style={S(t.rateStyle)}>{t.rate}</div><div style={S('font-size:11px;color:var(--ink3)')}>z pojistného</div></div>
           </div>
         ))}
       </div>
