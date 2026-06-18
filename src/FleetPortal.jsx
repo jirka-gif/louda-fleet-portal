@@ -147,7 +147,7 @@ export default function FleetPortal() {
       insurance: ['Pojištění', 'Smlouvy a krytí napříč parky'],
       claims: ['Pojistné události', '9 otevřených · 47 uzavřených letos'],
       documents: ['Dokumenty', 'Centrální úložiště dokumentů'],
-      bonifikace: ['Bonifikace', 'Vrácení části provize dle škodního průběhu'],
+      bonifikace: ['Bonifikace', 'Vrácení části pojistného dle škodního průběhu'],
       contacts: ['Kontakty', 'Manažeři, řidiči, partneři'],
       analytics: ['Analytika', 'Náklady, trendy a úspory'],
       settings: ['Nastavení', 'Profil a předvolby portálu'],
@@ -565,11 +565,13 @@ export default function FleetPortal() {
       const bonus = f.bonus || DEFAULT_BONUS
       const lr = f.lossRatio ?? 0
       const tier = bonus.find((x) => lr <= x.threshold)
+      const rate = tier ? tier.rate : 0
       return {
-        id: f.id, name: f.name, manager: f.manager,
-        insurer: f.insurers.join(', '), policy: f.policy || '—',
+        id: f.id,
+        insurer: f.insurers[0], policy: f.policy || '—',
         lossRatio: lr, lrColor: lrColorFor(lr),
-        rateLabel: tier ? tier.rate + ' %' : '—', rateActive: !!tier, tierCount: bonus.length,
+        rateLabel: tier ? tier.rate + ' %' : '—', rateActive: !!tier,
+        rebateF: tier ? czk(Math.round(f.premium * rate / 100)) : '—',
         onClick: () => navigate('bonifikace-detail', { fleetId: f.id }),
       }
     })

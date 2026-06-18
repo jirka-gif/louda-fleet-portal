@@ -916,27 +916,23 @@ function Bonifikace({ vm }) {
     <div>
       <div style={S('display:flex;align-items:center;gap:9px;margin-bottom:14px;padding:13px 16px;background:var(--blue-soft);border-radius:12px;font-size:12.5px;color:var(--blue-ink)')}>
         <span style={S('display:flex;flex-shrink:0')}>{ic('percent', 17)}</span>
-        <span>Bonifikace = vrácení části provize podle škodního průběhu flotily. Vyberte smlouvu pro zobrazení nastavených pásem.</span>
+        <span>Bonifikace = vrácení části pojistného podle škodního průběhu smlouvy. Vyberte smlouvu pro zobrazení nastavených pásem.</span>
       </div>
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
-        <HScroll minW={820}>
+        <HScroll minW={760}>
           <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
             <div style={S('width:40px;flex-shrink:0')}></div>
-            <div style={S('flex:1;min-width:0')}>Flotila</div>
-            <div style={S('width:150px')}>Pojišťovna</div>
-            <div style={S('width:130px')}>Číslo smlouvy</div>
-            <div style={S('width:110px;text-align:right')}>Škodní průběh</div>
-            <div style={S('width:120px;text-align:right')}>Bonifikace</div>
+            <div style={S('flex:1;min-width:0')}>Pojistitel / smlouva</div>
+            <div style={S('width:120px;text-align:right')}>Škodní průběh</div>
+            <div style={S('width:180px;text-align:right')}>Vrací se</div>
             <div style={S('width:18px;flex-shrink:0')}></div>
           </div>
           {vm.bonifList.map((b) => (
             <Hov key={b.id} onClick={b.onClick} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer" hover="background:#FAFAFA">
-              <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('fleets', 20)}</div>
-              <div style={S('flex:1;min-width:0')}><div style={S('font-size:14px;font-weight:700;line-height:1.2')}>{b.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{b.manager}</div></div>
-              <div style={S('width:150px;font-size:12.5px;color:var(--ink2)')}>{b.insurer}</div>
-              <div style={S('width:130px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{b.policy}</div>
-              <div style={S(`width:110px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums;color:${b.lrColor}`)}>{b.lossRatio} %</div>
-              <div style={S('width:120px;text-align:right')}>{b.rateActive ? <span style={S('font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:20px')}>{b.rateLabel} z pojistného</span> : <span style={S('font-size:12.5px;color:var(--ink3)')}>—</span>}</div>
+              <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('percent', 20)}</div>
+              <div style={S('flex:1;min-width:0')}><div style={S('font-size:14px;font-weight:700;line-height:1.2')}>{b.insurer}</div><div style={S('font-size:12px;color:var(--ink3)')}>Flotilová smlouva č. <span style={S('font-variant-numeric:tabular-nums')}>{b.policy}</span></div></div>
+              <div style={S(`width:120px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums;color:${b.lrColor}`)}>{b.lossRatio} %</div>
+              <div style={S('width:180px;text-align:right')}>{b.rateActive ? (<><span style={S('font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:20px')}>{b.rateLabel} z pojistného</span><div style={S('font-size:12px;color:var(--ink2);font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums')}>{b.rebateF} ročně</div></>) : <span style={S('font-size:12.5px;color:var(--ink3)')}>bez nároku</span>}</div>
               <span style={S('width:18px;flex-shrink:0;color:var(--ink3);display:flex')}>{ic('arrow', 16)}</span>
             </Hov>
           ))}
