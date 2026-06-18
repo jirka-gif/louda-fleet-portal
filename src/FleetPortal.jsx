@@ -26,6 +26,8 @@ export default function FleetPortal() {
     search: false, notif: false, ai: false, companyMenu: false, sidebar: false,
     claimWizard: false, claimStep: 1, claimData: {},
     rowMenu: null, toast: null,
+    np: false, npData: { name: '', manager: '', insurer: 'Kooperativa', policy: '', start: '1. 7. 2026', vehicles: '' },
+    newFleets: [],
     av: false, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avLoading: false, avFleet: 'f1',
     avCover: { pr: true, hav: true, skla: true, uraz: false, zavazadla: false, zver: true, nahradni: false, strojni: false, gap: false, zivel: false, asist: true, prac: false },
     avHavRozsah: 'allrisk', avHavSpoluucast: '5% / 5 000 Kč', avPrLimit: '100 / 100 mil. Kč', avUziti: 'Běžné užití',
@@ -42,6 +44,7 @@ export default function FleetPortal() {
   const ttRef = useRef(null)
   const vp = useViewport()
   const setState = (patch) => setStateRaw((s) => ({ ...s, ...(typeof patch === 'function' ? patch(s) : patch) }))
+  const allFleets = [...fleetsData, ...state.newFleets]
 
   // ---------- ACTIONS ----------
   const navigate = (route, patch) => setState({ route, ...(patch || {}), search: false, notif: false, companyMenu: false, sidebar: false })
@@ -74,6 +77,43 @@ export default function FleetPortal() {
   }
 
   // ---------- VIEW MODELS ----------
+  const newFleetVM = () => {
+    const d = state.npData
+    const setField = (k, v) => setState((s) => ({ npData: { ...s.npData, [k]: v } }))
+    const create = () => {
+      const id = 'fn' + (state.newFleets.length + 1)
+      const nf = {
+        id,
+        name: d.name.trim() || 'Nový vozový park',
+        manager: d.manager.trim() || '—',
+        vehicles: parseInt(d.vehicles, 10) || 0,
+        premium: 0, claims: 0, risk: 100,
+        insurers: [d.insurer], renewals: 0,
+        policy: d.policy.trim() || '—', policyStart: d.start,
+      }
+      setState((s) => ({ newFleets: [...s.newFleets, nf], np: false }))
+      navigate('fleet-detail', { fleetId: id, fleetTab: 'overview' })
+      showToast(`Vozový park „${nf.name}" byl vytvořen · flotilová smlouva ${nf.policy}.`)
+    }
+    return {
+      np: state.np,
+      openNewFleet: () => setState({ np: true, npData: { name: '', manager: '', insurer: 'Kooperativa', policy: '', start: '1. 7. 2026', vehicles: '' } }),
+      nf: {
+        close: () => setState({ np: false }), stop: (e) => e.stopPropagation(), create,
+        canCreate: d.name.trim().length > 0,
+        broker: 'Robert Harlas, IS Group, spol. s r.o.',
+        insurerOpts: ['Kooperativa', 'Allianz', 'ČPP', 'Generali', 'UNIQA', 'ČSOB Poj.'],
+        name: d.name, manager: d.manager, insurer: d.insurer, policy: d.policy, start: d.start, vehicles: d.vehicles,
+        onName: (e) => setField('name', e.target.value),
+        onManager: (e) => setField('manager', e.target.value),
+        onInsurer: (e) => setField('insurer', e.target.value),
+        onPolicy: (e) => setField('policy', e.target.value),
+        onStart: (e) => setField('start', e.target.value),
+        onVehicles: (e) => setField('vehicles', e.target.value),
+      },
+    }
+  }
+
   const shellVM = () => {
     const r = state.route
     const navItems = [
@@ -109,7 +149,7 @@ export default function FleetPortal() {
       settings: ['Nastavení', 'Profil a předvolby portálu'],
     }
     let title, sub
-    if (r === 'fleet-detail') { const f = fleetsData.find((x) => x.id === state.fleetId); title = f.name; sub = `Fleet manager · ${f.manager} · ${f.vehicles} vozidel` }
+    if (r === 'fleet-detail') { const f = allFleets.find((x) => x.id === state.fleetId); title = f.name; sub = `Fleet manager · ${f.manager} · ${f.vehicles} vozidel` }
     else if (r === 'vehicle-detail') { const v = vehiclesData.find((x) => x.id === state.vehicleId); title = `${v.brand} ${v.model}`; sub = `${v.plate} · ${fleetName(v.fleet)}` }
     else { const t = titles[r] || ['', '']; title = t[0]; sub = t[1] }
 
@@ -135,7 +175,7 @@ export default function FleetPortal() {
     const q = state.searchQuery.toLowerCase()
     let res = []
     vehiclesData.forEach((v) => res.push({ kind: 'Vozidlo', title: `${v.brand} ${v.model}`, sub: `${v.plate} · ${v.driver}`, icon: ic('car', 16), bg: '#F1F1F3', color: '#5B5B63', onClick: () => openVehicle(v.id), q: `${v.brand} ${v.model} ${v.plate} ${v.driver}`.toLowerCase() }))
-    fleetsData.forEach((f) => res.push({ kind: 'Park', title: f.name, sub: `${f.vehicles} vozidel · ${f.manager}`, icon: ic('fleets', 16), bg: 'var(--blue-soft)', color: 'var(--blue)', onClick: () => openFleet(f.id), q: `${f.name} ${f.manager}`.toLowerCase() }))
+    allFleets.forEach((f) => res.push({ kind: 'Park', title: f.name, sub: `${f.vehicles} vozidel · ${f.manager}`, icon: ic('fleets', 16), bg: 'var(--blue-soft)', color: 'var(--blue)', onClick: () => openFleet(f.id), q: `${f.name} ${f.manager}`.toLowerCase() }))
     claimsData.forEach((c) => res.push({ kind: 'Událost', title: c.id, sub: `${c.vehicle} · ${c.type}`, icon: ic('alert', 16), bg: 'var(--star-soft)', color: 'var(--star)', onClick: () => navigate('claims'), q: `${c.id} ${c.vehicle} ${c.type}`.toLowerCase() }))
     if (q) res = res.filter((x) => x.q.includes(q))
     res = res.slice(0, 7)
@@ -151,6 +191,7 @@ export default function FleetPortal() {
       goFleets: () => navigate('fleets'),
       openClaimWizard: () => setState({ claimWizard: true, claimStep: 1, claimData: {} }),
       av: state.av, openAddVehicle: () => setState({ av: true, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avFleet: state.fleetId }),
+      ...newFleetVM(),
       companyMenu: state.companyMenu, notif: state.notif, ai: state.ai, search: state.search,
       searchQuery: state.searchQuery, searchResults: res,
       aiMessages, aiChips, aiInput: state.aiInput, notifs,
@@ -204,7 +245,7 @@ export default function FleetPortal() {
   const fleetsVM = () => {
     if (state.route !== 'fleets') return {}
     const riskColor = (r) => r >= 75 ? 'var(--green)' : r >= 62 ? 'var(--amber)' : 'var(--star)'
-    const fleetCards = fleetsData.map((f) => ({
+    const fleetCards = allFleets.map((f) => ({
       name: f.name, manager: f.manager, vehicles: f.vehicles,
       premium: (f.premium / 1000000).toFixed(2).replace('.', ',') + ' mil.',
       claims: f.claims, risk: f.risk, riskColor: riskColor(f.risk),
@@ -216,14 +257,14 @@ export default function FleetPortal() {
 
   const fleetDetailVM = () => {
     if (state.route !== 'fleet-detail') return {}
-    const f = fleetsData.find((x) => x.id === state.fleetId)
+    const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]
     const tab = state.fleetTab
     const riskColor = (r) => r >= 75 ? 'var(--green)' : r >= 62 ? 'var(--amber)' : 'var(--star)'
     const stats = [
       { label: 'Vozidla', value: String(f.vehicles), color: 'var(--ink)' },
       { label: 'Roční pojistné', value: (f.premium / 1000000).toFixed(2).replace('.', ',') + ' mil.', color: 'var(--ink)' },
-      { label: 'Ø / vozidlo', value: Math.round(f.premium / f.vehicles).toLocaleString('cs-CZ'), color: 'var(--ink)' },
-      { label: 'Škodní poměr', value: Math.round(f.claims / f.vehicles * 100 * 4) + ' %', color: 'var(--amber)' },
+      { label: 'Ø / vozidlo', value: Math.round(f.premium / (f.vehicles || 1)).toLocaleString('cs-CZ'), color: 'var(--ink)' },
+      { label: 'Škodní poměr', value: Math.round(f.claims / (f.vehicles || 1) * 100 * 4) + ' %', color: 'var(--amber)' },
       { label: 'Rizikové skóre', value: f.risk + '/100', color: riskColor(f.risk) },
     ]
     const tabsDef = [['overview', 'Přehled'], ['vehicles', 'Vozidla'], ['insurance', 'Pojištění'], ['claims', 'Události'], ['documents', 'Dokumenty'], ['analytics', 'Analytika'], ['timeline', 'Timeline']]
@@ -231,7 +272,7 @@ export default function FleetPortal() {
     const summary = [
       { label: 'Předepsané pojistné', value: (f.premium / 1000000).toFixed(2).replace('.', ',') + ' mil.', sub: 'ročně', color: 'var(--ink)' },
       { label: 'Pojistné události', value: String(f.claims), sub: 'za 12 měsíců', color: 'var(--ink)' },
-      { label: 'Ø pojistné / vozidlo', value: Math.round(f.premium / f.vehicles).toLocaleString('cs-CZ'), sub: 'Kč ročně', color: 'var(--ink)' },
+      { label: 'Ø pojistné / vozidlo', value: Math.round(f.premium / (f.vehicles || 1)).toLocaleString('cs-CZ'), sub: 'Kč ročně', color: 'var(--ink)' },
       { label: 'Obnovy do 30 dnů', value: String(f.renewals), sub: 'smluv', color: 'var(--amber)' },
     ]
     const base = f.premium / 12 / 1000
@@ -273,7 +314,7 @@ export default function FleetPortal() {
     const o = otherMap[tab] || ['', '', null]
     return {
       fd: {
-        name: f.name, manager: f.manager, stats, summary, line: lp.line, area: lp.area, donut, insurerLegend, fuel, evPct, evDonut, claimBars, claims: f.claims,
+        name: f.name, manager: f.manager, policy: f.policy || '—', policyStart: f.policyStart || '—', stats, summary, line: lp.line, area: lp.area, donut, insurerLegend, fuel, evPct, evDonut, claimBars, claims: f.claims,
         vehicles: fleetVehicles, vehicleCount: fleetVehicles.length, goVehiclesTab: () => setState({ fleetTab: 'vehicles' }),
         isOverview: tab === 'overview', isVehicles: tab === 'vehicles', isOther: !['overview', 'vehicles'].includes(tab),
         otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
@@ -512,7 +553,7 @@ export default function FleetPortal() {
   const addVehicleVM = () => {
     if (!state.av) return {}
     const step = state.avStep; const done = step > 3
-    const f = fleetsData.find((x) => x.id === state.avFleet) || fleetsData[0]
+    const f = allFleets.find((x) => x.id === state.avFleet) || allFleets[0]
     const labels = ['Zadání vozidla', 'Údaje o vozidle', 'Pojistné krytí']
     const steps = [1, 2, 3].map((i) => ({ color: i <= step ? 'var(--blue)' : '#E8E8EB' }))
     const m = state.avMethod
@@ -577,7 +618,7 @@ export default function FleetPortal() {
       avm: {
         close: () => setState({ av: false }), stop: (e) => e.stopPropagation(),
         fleetName: f.name, fleetId: state.avFleet,
-        fleetOptions: fleetsData.map((x) => ({ v: x.id, l: x.name })),
+        fleetOptions: allFleets.map((x) => ({ v: x.id, l: x.name })),
         onFleetChange: (e) => setState({ avFleet: e.target.value }),
         stepLabel: done ? 'Hotovo' : `Krok ${step} ze 3 · ${labels[step - 1]}`, steps,
         s1: step === 1, s2: step === 2, s3: step === 3, isDone: done,

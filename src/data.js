@@ -19,12 +19,12 @@ export const brandsData = [
 ]
 
 export const fleetsData = [
-  { id: 'f1', name: 'Praha – Centrála', manager: 'Petr Novák', vehicles: 84, premium: 4280000, claims: 12, risk: 72, insurers: ['Kooperativa', 'Allianz'], renewals: 7 },
-  { id: 'f2', name: 'Mladá Boleslav – Sklad', manager: 'Jana Dvořáková', vehicles: 56, premium: 2640000, claims: 7, risk: 64, insurers: ['ČPP', 'Generali'], renewals: 4 },
-  { id: 'f3', name: 'Brno – Pobočka', manager: 'Tomáš Svoboda', vehicles: 48, premium: 2180000, claims: 9, risk: 81, insurers: ['Kooperativa'], renewals: 11 },
-  { id: 'f4', name: 'Servisní vozy', manager: 'Martin Horák', vehicles: 32, premium: 1120000, claims: 4, risk: 58, insurers: ['UNIQA', 'ČSOB'], renewals: 2 },
-  { id: 'f5', name: 'Management & Exekutiva', manager: 'Lucie Marešová', vehicles: 18, premium: 1640000, claims: 1, risk: 91, insurers: ['Allianz'], renewals: 1 },
-  { id: 'f6', name: 'Dlouhodobý pronájem', manager: 'Jan Kučera', vehicles: 74, premium: 3050000, claims: 15, risk: 55, insurers: ['Generali', 'ČPP'], renewals: 9 },
+  { id: 'f1', name: 'Praha – Centrála', manager: 'Petr Novák', vehicles: 84, premium: 4280000, claims: 12, risk: 72, insurers: ['Kooperativa', 'Allianz'], renewals: 7, policy: '7720 134 567', policyStart: '1. 1. 2024' },
+  { id: 'f2', name: 'Mladá Boleslav – Sklad', manager: 'Jana Dvořáková', vehicles: 56, premium: 2640000, claims: 7, risk: 64, insurers: ['ČPP', 'Generali'], renewals: 4, policy: '0019 283 746', policyStart: '1. 4. 2024' },
+  { id: 'f3', name: 'Brno – Pobočka', manager: 'Tomáš Svoboda', vehicles: 48, premium: 2180000, claims: 9, risk: 81, insurers: ['Kooperativa'], renewals: 11, policy: '7720 156 789', policyStart: '1. 7. 2023' },
+  { id: 'f4', name: 'Servisní vozy', manager: 'Martin Horák', vehicles: 32, premium: 1120000, claims: 4, risk: 58, insurers: ['UNIQA', 'ČSOB'], renewals: 2, policy: '2401 558 899', policyStart: '1. 10. 2024' },
+  { id: 'f5', name: 'Management & Exekutiva', manager: 'Lucie Marešová', vehicles: 18, premium: 1640000, claims: 1, risk: 91, insurers: ['Allianz'], renewals: 1, policy: '4055 123 987', policyStart: '1. 1. 2025' },
+  { id: 'f6', name: 'Dlouhodobý pronájem', manager: 'Jan Kučera', vehicles: 74, premium: 3050000, claims: 15, risk: 55, insurers: ['Generali', 'ČPP'], renewals: 9, policy: '5544 098 712', policyStart: '1. 3. 2024' },
 ]
 
 export const vehiclesData = [

@@ -129,6 +129,61 @@ export default function Render({ vm }) {
       {vm.search && <SearchModal vm={vm} />}
       {vm.claimWizard && <ClaimWizard vm={vm} />}
       {vm.av && <AddVehicleWizard vm={vm} />}
+      {vm.np && <NewFleetModal vm={vm} />}
+    </div>
+  )
+}
+
+/* ============================ NEW FLEET MODAL ============================ */
+function NewFleetModal({ vm }) {
+  const nf = vm.nf
+  const fieldWrap = 'display:flex;flex-direction:column;gap:5px'
+  const label = 'font-size:11.5px;font-weight:600;color:var(--ink2)'
+  const input = 'width:100%;height:42px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none;background:#fff'
+  return (
+    <div onClick={nf.close} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.4);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={nf.stop} style={S('width:600px;max-width:96vw;max-height:90vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('fleets', 20)}</div>
+          <div style={{ flex: 1 }}><div style={S('font-size:16px;font-weight:700')}>Nový vozový park</div><div style={S('font-size:12.5px;color:var(--ink3)')}>Vyplňte údaje parku a flotilové smlouvy</div></div>
+          <span onClick={nf.close} style={S('color:var(--ink3);cursor:pointer;display:flex')}>{ic('close', 17)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;padding:22px')}>
+          <div style={S('font-size:13.5px;font-weight:700;margin-bottom:12px')}>Základní údaje</div>
+          <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px')}>
+            <div style={S(fieldWrap)}><span style={S(label)}>Název parku</span><input value={nf.name} onChange={nf.onName} placeholder="např. Plzeň – Pobočka" style={S(input)} /></div>
+            <div style={S(fieldWrap)}><span style={S(label)}>Fleet manager</span><input value={nf.manager} onChange={nf.onManager} placeholder="Jméno a příjmení" style={S(input)} /></div>
+          </div>
+          <div style={S('display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 14px;background:#FBFBFC;border:1px solid var(--border);border-radius:11px')}>
+            <span style={S('color:var(--ink3);display:flex;flex-shrink:0')}>{ic('user1', 16)}</span>
+            <div style={S('font-size:12.5px;color:var(--ink3)')}>Odpovědný makléř <span style={S('color:var(--ink2);font-weight:600')}>{nf.broker}</span></div>
+          </div>
+
+          <div style={S('font-size:13.5px;font-weight:700;margin:20px 0 12px')}>Flotilová smlouva</div>
+          <div style={S('display:flex;align-items:flex-start;gap:10px;padding:13px 15px;background:var(--blue-soft);border-radius:12px;margin-bottom:14px')}>
+            <span style={S('color:var(--blue);display:flex;flex-shrink:0;margin-top:18px')}>{ic('doc2', 18)}</span>
+            <div style={S('flex:1;min-width:0')}>
+              <span style={S('font-size:11.5px;font-weight:600;color:var(--blue-ink)')}>Číslo flotilové smlouvy</span>
+              <input value={nf.policy} onChange={nf.onPolicy} placeholder="např. 7720 134 567" style={S(input + ';margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:.3px;font-weight:600')} />
+            </div>
+          </div>
+          <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px')}>
+            <div style={S(fieldWrap)}><span style={S(label)}>Pojišťovna</span>
+              <select value={nf.insurer} onChange={nf.onInsurer} style={S(input + ';cursor:pointer')}>
+                {nf.insurerOpts.map((o, i) => <option key={i} value={o}>{o}</option>)}
+              </select>
+            </div>
+            <div style={S(fieldWrap)}><span style={S(label)}>Platnost od</span><input value={nf.start} onChange={nf.onStart} style={S(input)} /></div>
+            <div style={S(fieldWrap)}><span style={S(label)}>Počet vozidel</span><input value={nf.vehicles} onChange={nf.onVehicles} placeholder="0" style={S(input + ';font-variant-numeric:tabular-nums')} /></div>
+          </div>
+        </div>
+
+        <div style={S('display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border)')}>
+          <span onClick={nf.close} style={S('height:40px;padding:0 18px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer')}>Zrušit</span>
+          <div onClick={nf.canCreate ? nf.create : undefined} style={S(`height:40px;padding:0 22px;border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:#fff;background:var(--blue);${nf.canCreate ? 'cursor:pointer' : 'opacity:.5;cursor:not-allowed'}`)}>Vytvořit park</div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -305,7 +360,7 @@ function Fleets({ vm }) {
             <div onClick={() => vm.setFleetsView('grid')} style={S(segBtn(!isTable))} title="Dlaždice">{ic('grid', 16)}</div>
             <div onClick={() => vm.setFleetsView('table')} style={S(segBtn(isTable))} title="Tabulka">{ic('rows', 16)}</div>
           </div>
-          <div style={S('display:flex;align-items:center;gap:8px;height:38px;padding:0 15px;background:var(--blue);color:#fff;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer')}>{ic('plus', 15)} Nový park</div>
+          <Hov onClick={vm.openNewFleet} base="display:flex;align-items:center;gap:8px;height:38px;padding:0 15px;background:var(--blue);color:#fff;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer" hover="background:#1A47A3">{ic('plus', 15)} Nový park</Hov>
         </div>
       </div>
 
@@ -386,6 +441,7 @@ function FleetDetail({ vm }) {
             <div>
               <div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px')}>{fd.name}</div>
               <div style={S('font-size:13px;color:var(--ink3);margin-top:3px')}>Fleet manager <span style={S('color:var(--ink2);font-weight:600')}>{fd.manager}</span> · Odpovědný makléř <span style={S('color:var(--ink2);font-weight:600')}>Robert Harlas, IS Group, spol. s r.o.</span></div>
+              <div style={S('display:inline-flex;align-items:center;gap:8px;margin-top:9px;padding:5px 11px;background:var(--blue-soft);border-radius:8px;font-size:12.5px;color:var(--blue-ink)')}><span style={S('display:flex')}>{ic('doc2', 15)}</span>Flotilová smlouva č. <span style={S('font-weight:700;font-variant-numeric:tabular-nums')}>{fd.policy}</span> · platná od {fd.policyStart}</div>
             </div>
           </div>
           <div style={S('display:flex;gap:8px')}>
