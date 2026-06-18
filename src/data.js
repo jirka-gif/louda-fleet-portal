@@ -46,6 +46,9 @@ export const vehiclesData = [
   { id: 'v16', plate: '9OC 2284', brand: 'Škoda', model: 'Octavia 1.5 TSI', year: 2020, driver: 'Tomáš Svoboda', fleet: 'f3', insurer: 'Kooperativa', status: 'nocasco', premium: 13900, renewal: '22. 7. 2026', fuel: 'Benzín', vin: 'TMBAG7NE0L0998822', mileage: '104 200 km', value: '320 000 Kč' },
 ]
 
+// Číslo přihlášky vozidla do flotilové smlouvy (registration into the fleet policy)
+vehiclesData.forEach((v, i) => { v.prihlaska = `PŘ-${v.year}/${String(118 + i * 13).padStart(4, '0')}` })
+
 export const claimsData = [
   { id: 'CLM-2026-0142', vehicle: 'Škoda Octavia · 5SK 8841', vId: 'v1', type: 'Havárie – křižovatka', status: 'repair', insurer: 'Kooperativa', estimate: 84000, date: '28. 5. 2026', shop: 'AutoCentrum Praha', adjuster: 'Pavel Říha', progress: 60 },
   { id: 'CLM-2026-0138', vehicle: 'Tesla Model 3 · 1EV 9087', vId: 'v7', type: 'Sklo – čelní', status: 'approved', insurer: 'ČPP', estimate: 12400, date: '12. 5. 2026', shop: 'AutoSklo Express', adjuster: 'Eva Horká', progress: 100 },

@@ -246,7 +246,7 @@ export default function FleetPortal() {
     if (state.route !== 'fleets') return {}
     const riskColor = (r) => r >= 75 ? 'var(--green)' : r >= 62 ? 'var(--amber)' : 'var(--star)'
     const fleetCards = allFleets.map((f) => ({
-      name: f.name, manager: f.manager, vehicles: f.vehicles,
+      name: f.name, manager: f.manager, vehicles: f.vehicles, policy: f.policy || '—',
       premium: (f.premium / 1000000).toFixed(2).replace('.', ',') + ' mil.',
       claims: f.claims, risk: f.risk, riskColor: riskColor(f.risk),
       renewals: f.renewals, renewalsShow: f.renewals > 0, insurers: f.insurers,
@@ -293,6 +293,7 @@ export default function FleetPortal() {
       const mo = open === v.id
       return {
         id: v.id, plate: v.plate, brand: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel, insurer: v.insurer,
+        vin: v.vin, prihlaska: v.prihlaska,
         premiumF: czk(v.premium), statusLabel: statusMeta[v.status].label, chipStyle: statusChip(v.status),
         onClick: () => openVehicle(v.id),
         menuOpen: mo, stop: (e) => e.stopPropagation(),
@@ -351,6 +352,7 @@ export default function FleetPortal() {
       const mo = open === v.id
       return {
         id: v.id, plate: v.plate, brand: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel,
+        vin: v.vin, prihlaska: v.prihlaska,
         fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), renewal: v.renewal,
         statusLabel: statusMeta[v.status].label, chipStyle: statusChip(v.status),
         onClick: () => openVehicle(v.id),
@@ -386,8 +388,8 @@ export default function FleetPortal() {
       { label: 'Odebrat', icon: ic('trash', 20), color: 'var(--star)' },
     ]
     const specs = [
-      { k: 'Značka', v: v.brand }, { k: 'Model', v: v.model }, { k: 'VIN', v: v.vin }, { k: 'Rok výroby', v: String(v.year) },
-      { k: 'Palivo', v: v.fuel }, { k: 'Nájezd', v: v.mileage }, { k: 'Datum pořízení', v: '3. 4. ' + v.year }, { k: 'Účetní hodnota', v: v.value },
+      { k: 'Značka', v: v.brand }, { k: 'Model', v: v.model }, { k: 'VIN', v: v.vin }, { k: 'Číslo přihlášky', v: v.prihlaska },
+      { k: 'Rok výroby', v: String(v.year) }, { k: 'Palivo', v: v.fuel }, { k: 'Nájezd', v: v.mileage }, { k: 'Účetní hodnota', v: v.value },
     ]
     const assign = [
       { k: 'Odpovědný řidič', v: v.driver, icon: ic('user1', 18), bg: 'var(--blue-soft)', color: 'var(--blue)' },
