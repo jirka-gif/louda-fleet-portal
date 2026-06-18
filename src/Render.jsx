@@ -383,7 +383,7 @@ function Fleets({ vm }) {
             {vm.fleetCards.map((f, i) => (
               <Hov key={i} onClick={f.onClick} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer" hover="background:#FAFAFA">
                 <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('fleets', 20)}</div>
-                <div style={S('flex:1;min-width:0')}><div style={S('font-size:14px;font-weight:700;line-height:1.2')}>{f.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{f.manager} · Smlouva č. <span style={S('font-weight:600;color:var(--ink2);font-variant-numeric:tabular-nums')}>{f.policy}</span></div></div>
+                <div style={S('flex:1;min-width:0')}><div style={S('font-size:14px;font-weight:700;line-height:1.2')}>{f.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{f.manager}</div></div>
                 <div style={S('width:70px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums')}>{f.vehicles}</div>
                 <div style={S('width:104px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums')}>{f.premium}</div>
                 <div style={S('width:80px;text-align:right;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{f.claims}</div>
@@ -402,10 +402,9 @@ function Fleets({ vm }) {
             <div style={S('display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px')}>
               <div style={S('display:flex;align-items:center;gap:12px')}>
                 <div style={S('width:44px;height:44px;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('fleets', 22)}</div>
-                <div style={S('min-width:0')}>
+                <div>
                   <div style={S('font-size:15.5px;font-weight:700;line-height:1.15')}>{f.name}</div>
                   <div style={S('font-size:12.5px;color:var(--ink3)')}>{f.manager}</div>
-                  <div style={S('font-size:11.5px;color:var(--ink3);margin-top:3px;display:flex;align-items:center;gap:5px')}><span style={S('display:flex')}>{ic('doc2', 13)}</span>Smlouva č. <span style={S('font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums')}>{f.policy}</span></div>
                 </div>
               </div>
               {f.renewalsShow ? <span style={S('font-size:11px;font-weight:700;color:var(--amber);background:var(--amber-soft);padding:3px 8px;border-radius:20px;white-space:nowrap')}>{f.renewals} obnov</span> : null}
