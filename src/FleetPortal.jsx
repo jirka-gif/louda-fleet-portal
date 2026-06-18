@@ -155,7 +155,7 @@ export default function FleetPortal() {
     let title, sub
     if (r === 'fleet-detail') { const f = allFleets.find((x) => x.id === state.fleetId); title = f.name; sub = `Fleet manager · ${f.manager} · ${f.vehicles} vozidel` }
     else if (r === 'vehicle-detail') { const v = vehiclesData.find((x) => x.id === state.vehicleId); title = `${v.brand} ${v.model}`; sub = `${v.plate} · ${fleetName(v.fleet)}` }
-    else if (r === 'bonifikace-detail') { const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]; title = `Bonifikace · ${f.name}`; sub = `${f.insurers.join(', ')} · smlouva č. ${f.policy || '—'}` }
+    else if (r === 'bonifikace-detail') { const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]; title = `Bonifikace · ${f.name}`; sub = `Flotilová smlouva č. ${f.policy || '—'} · Pojistitel ${f.insurers[0]}` }
     else { const t = titles[r] || ['', '']; title = t[0]; sub = t[1] }
 
     const aiMessages = state.aiMessages.map((m) => ({
@@ -599,7 +599,7 @@ export default function FleetPortal() {
     const rebate = Math.round(base * activeRate / 100)
     return {
       bd: {
-        name: f.name, insurer: f.insurers.join(', '), policy: f.policy || '—', policyStart: f.policyStart || '—',
+        name: f.name, insurer: f.insurers[0], policy: f.policy || '—', policyStart: f.policyStart || '—',
         lossRatio: lr, lrColor: lrColorFor(lr), tiers,
         premiumF: czk(base), rebateF: czk(rebate), hasActive: !!activeTier, activeRate,
         note: activeTier
