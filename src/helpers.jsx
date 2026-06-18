@@ -115,6 +115,7 @@ const PATHS = {
   menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
   grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
   rows: '<rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="14" width="18" height="4" rx="1"/>',
+  percent: '<path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
 }
 
 export function Icon({ name, size = 18, sw = 1.8, style }) {

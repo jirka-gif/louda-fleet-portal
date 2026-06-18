@@ -103,6 +103,8 @@ export default function Render({ vm }) {
             {vm.isInsurance && <Insurance vm={vm} />}
             {vm.isClaims && <Claims vm={vm} />}
             {vm.isDocuments && <Documents vm={vm} />}
+            {vm.isBonifikace && <Bonifikace vm={vm} />}
+            {vm.isBonifikaceDetail && <BonifikaceDetail vm={vm} />}
             {vm.isAnalytics && <Analytics vm={vm} />}
             {vm.isContacts && <Contacts vm={vm} />}
             {vm.isSettings && <Settings vm={vm} />}
@@ -904,6 +906,88 @@ function Documents({ vm }) {
           </Hov>
         ))}
         </HScroll>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ BONIFIKACE ============================ */
+function Bonifikace({ vm }) {
+  return (
+    <div>
+      <div style={S('display:flex;align-items:center;gap:9px;margin-bottom:14px;padding:13px 16px;background:var(--blue-soft);border-radius:12px;font-size:12.5px;color:var(--blue-ink)')}>
+        <span style={S('display:flex;flex-shrink:0')}>{ic('percent', 17)}</span>
+        <span>Bonifikace = vrácení části provize podle škodního průběhu flotily. Vyberte smlouvu pro zobrazení nastavených pásem.</span>
+      </div>
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+        <HScroll minW={820}>
+          <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+            <div style={S('width:40px;flex-shrink:0')}></div>
+            <div style={S('flex:1;min-width:0')}>Flotila</div>
+            <div style={S('width:150px')}>Pojišťovna</div>
+            <div style={S('width:130px')}>Číslo smlouvy</div>
+            <div style={S('width:110px;text-align:right')}>Škodní průběh</div>
+            <div style={S('width:120px;text-align:right')}>Bonifikace</div>
+            <div style={S('width:18px;flex-shrink:0')}></div>
+          </div>
+          {vm.bonifList.map((b) => (
+            <Hov key={b.id} onClick={b.onClick} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer" hover="background:#FAFAFA">
+              <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('fleets', 20)}</div>
+              <div style={S('flex:1;min-width:0')}><div style={S('font-size:14px;font-weight:700;line-height:1.2')}>{b.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{b.manager}</div></div>
+              <div style={S('width:150px;font-size:12.5px;color:var(--ink2)')}>{b.insurer}</div>
+              <div style={S('width:130px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{b.policy}</div>
+              <div style={S(`width:110px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums;color:${b.lrColor}`)}>{b.lossRatio} %</div>
+              <div style={S('width:120px;text-align:right')}>{b.rateActive ? <span style={S('font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:20px')}>{b.rateLabel} z provize</span> : <span style={S('font-size:12.5px;color:var(--ink3)')}>—</span>}</div>
+              <span style={S('width:18px;flex-shrink:0;color:var(--ink3);display:flex')}>{ic('arrow', 16)}</span>
+            </Hov>
+          ))}
+        </HScroll>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ BONIFIKACE DETAIL ============================ */
+function BonifikaceDetail({ vm }) {
+  const bd = vm.bd
+  return (
+    <div>
+      <Hov onClick={bd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Bonifikace</Hov>
+
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px;margin-bottom:16px')}>
+        <div style={S('display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px')}>
+          <div style={S('display:flex;gap:16px;align-items:center')}>
+            <div style={S('width:56px;height:56px;border-radius:14px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('percent', 26)}</div>
+            <div>
+              <div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px')}>{bd.name}</div>
+              <div style={S('font-size:13px;color:var(--ink3);margin-top:3px')}>{bd.insurer} · Flotilová smlouva č. <span style={S('color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums')}>{bd.policy}</span></div>
+            </div>
+          </div>
+          <div style={S('display:flex;gap:10px;flex-wrap:wrap')}>
+            <div style={S('padding:10px 16px;border:1px solid var(--border);border-radius:12px;text-align:right')}><div style={S('font-size:11.5px;color:var(--ink3)')}>Škodní průběh</div><div style={S(`font-size:20px;font-weight:800;letter-spacing:-.5px;color:${bd.lrColor}`)}>{bd.lossRatio} %</div></div>
+            <div style={S(`padding:10px 16px;border-radius:12px;text-align:right;background:${bd.hasActive ? 'var(--green-soft)' : '#F4F4F5'}`)}><div style={S('font-size:11.5px;color:var(--ink3)')}>Aktuální bonifikace</div><div style={S(`font-size:20px;font-weight:800;letter-spacing:-.5px;color:${bd.hasActive ? 'var(--green)' : 'var(--ink3)'}`)}>{bd.hasActive ? bd.rebateF : '—'}</div></div>
+          </div>
+        </div>
+        <div style={S('display:flex;align-items:flex-start;gap:9px;margin-top:18px;padding:12px 15px;background:#FBFBFC;border:1px solid var(--border);border-radius:11px;font-size:12.5px;color:var(--ink2)')}>
+          <span style={S('display:flex;flex-shrink:0;color:var(--ink3)')}>{ic('info', 16)}</span><span>{bd.note}</span>
+        </div>
+      </div>
+
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+        <div style={S('display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)')}>
+          <span style={S('font-size:15px;font-weight:700')}>Nastavená pásma bonifikace</span>
+          <span style={S('font-size:12.5px;color:var(--ink3)')}>Roční provize odhadem {bd.provizeF}</span>
+        </div>
+        {bd.tiers.map((t, i) => (
+          <div key={i} style={S(t.rowStyle)}>
+            <span style={S(t.dotStyle)}></span>
+            <div style={S('flex:1;min-width:0')}>
+              <div style={S('font-size:14px;font-weight:700;display:flex;align-items:center;gap:9px;flex-wrap:wrap')}>{t.label}{t.badge ? <span style={S('font-size:10.5px;font-weight:700;color:var(--green);background:#fff;border:1px solid var(--green-soft);padding:2px 8px;border-radius:20px')}>{t.badge}</span> : null}</div>
+              <div style={S('font-size:12.5px;color:var(--ink3);margin-top:2px')}>{t.desc}</div>
+            </div>
+            <div style={S('text-align:right')}><div style={S(t.rateStyle)}>{t.rate}</div><div style={S('font-size:11px;color:var(--ink3)')}>z provize</div></div>
+          </div>
+        ))}
       </div>
     </div>
   )

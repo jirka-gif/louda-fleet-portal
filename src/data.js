@@ -27,6 +27,20 @@ export const fleetsData = [
   { id: 'f6', name: 'Dlouhodobý pronájem', manager: 'Jan Kučera', vehicles: 74, premium: 3050000, claims: 15, risk: 55, insurers: ['Generali', 'ČPP'], renewals: 9, policy: '5544 098 712', policyStart: '1. 3. 2024' },
 ]
 
+// Škodní průběh (loss ratio) a nastavená pásma bonifikace (vrácení části provize dle škodního průběhu)
+const fleetBonus = {
+  f1: { lossRatio: 34, bonus: [[30, 18], [40, 12], [50, 6]] },
+  f2: { lossRatio: 41, bonus: [[30, 15], [40, 10], [50, 5]] },
+  f3: { lossRatio: 52, bonus: [[30, 20], [40, 14], [50, 8]] },
+  f4: { lossRatio: 28, bonus: [[30, 12], [40, 8], [50, 4]] },
+  f5: { lossRatio: 19, bonus: [[30, 22], [40, 16], [50, 9]] },
+  f6: { lossRatio: 47, bonus: [[30, 16], [40, 11], [50, 6]] },
+}
+fleetsData.forEach((f) => {
+  const b = fleetBonus[f.id]
+  if (b) { f.lossRatio = b.lossRatio; f.bonus = b.bonus.map(([threshold, rate]) => ({ threshold, rate })) }
+})
+
 export const vehiclesData = [
   { id: 'v1', plate: '5SK 8841', brand: 'Škoda', model: 'Octavia Combi 2.0 TDI', year: 2023, driver: 'Petr Novák', fleet: 'f1', insurer: 'Kooperativa', status: 'active', premium: 18400, renewal: '14. 9. 2026', fuel: 'Diesel', vin: 'TMBJJ7NE5P0123456', mileage: '62 400 km', value: '640 000 Kč' },
   { id: 'v2', plate: '7B2 4410', brand: 'Škoda', model: 'Superb iV', year: 2022, driver: 'Lucie Marešová', fleet: 'f5', insurer: 'Allianz', status: 'active', premium: 26800, renewal: '2. 7. 2026', fuel: 'PHEV', vin: 'TMBJG9NP7N0223344', mileage: '48 100 km', value: '880 000 Kč' },

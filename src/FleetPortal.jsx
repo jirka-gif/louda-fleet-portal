@@ -17,6 +17,8 @@ const ROOT_STYLE =
 
 const MONTHS = ['Čvc', 'Srp', 'Zář', 'Říj', 'Lis', 'Pro', 'Led', 'Úno', 'Bře', 'Dub', 'Kvě', 'Čvn']
 const INS_COLORS = { Kooperativa: '#2058C9', Allianz: '#16A34A', 'ČPP': '#C2780C', Generali: '#8B5CF6', UNIQA: '#0EA5A5', 'ČSOB': '#9B0E25' }
+const DEFAULT_BONUS = [{ threshold: 30, rate: 15 }, { threshold: 40, rate: 10 }, { threshold: 50, rate: 5 }]
+const lrColorFor = (lr) => (lr <= 30 ? 'var(--green)' : lr <= 45 ? 'var(--amber)' : 'var(--star)')
 
 export default function FleetPortal() {
   const [state, setStateRaw] = useState({
@@ -123,11 +125,12 @@ export default function FleetPortal() {
       ['insurance', 'Pojištění', 'shield', null],
       ['claims', 'Pojistné události', 'alert', '9'],
       ['documents', 'Dokumenty', 'file', null],
+      ['bonifikace', 'Bonifikace', 'percent', null],
       ['contacts', 'Kontakty', 'users', null],
       ['analytics', 'Analytika', 'chart', null],
       ['settings', 'Nastavení', 'settings', null],
     ]
-    const activeRoute = r === 'fleet-detail' ? 'fleets' : r === 'vehicle-detail' ? 'vehicles' : r
+    const activeRoute = r === 'fleet-detail' ? 'fleets' : r === 'vehicle-detail' ? 'vehicles' : r === 'bonifikace-detail' ? 'bonifikace' : r
     const nav = navItems.map(([id, label, icon, badge]) => {
       const on = activeRoute === id
       return {
@@ -144,6 +147,7 @@ export default function FleetPortal() {
       insurance: ['Pojištění', 'Smlouvy a krytí napříč parky'],
       claims: ['Pojistné události', '9 otevřených · 47 uzavřených letos'],
       documents: ['Dokumenty', 'Centrální úložiště dokumentů'],
+      bonifikace: ['Bonifikace', 'Vrácení části provize dle škodního průběhu'],
       contacts: ['Kontakty', 'Manažeři, řidiči, partneři'],
       analytics: ['Analytika', 'Náklady, trendy a úspory'],
       settings: ['Nastavení', 'Profil a předvolby portálu'],
@@ -151,6 +155,7 @@ export default function FleetPortal() {
     let title, sub
     if (r === 'fleet-detail') { const f = allFleets.find((x) => x.id === state.fleetId); title = f.name; sub = `Fleet manager · ${f.manager} · ${f.vehicles} vozidel` }
     else if (r === 'vehicle-detail') { const v = vehiclesData.find((x) => x.id === state.vehicleId); title = `${v.brand} ${v.model}`; sub = `${v.plate} · ${fleetName(v.fleet)}` }
+    else if (r === 'bonifikace-detail') { const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]; title = `Bonifikace · ${f.name}`; sub = `${f.insurers.join(', ')} · smlouva č. ${f.policy || '—'}` }
     else { const t = titles[r] || ['', '']; title = t[0]; sub = t[1] }
 
     const aiMessages = state.aiMessages.map((m) => ({
@@ -186,6 +191,8 @@ export default function FleetPortal() {
       isDashboard: r === 'dashboard', isFleets: r === 'fleets', isFleetDetail: r === 'fleet-detail',
       isVehicles: r === 'vehicles', isVehicleDetail: r === 'vehicle-detail',
       isInsurance: r === 'insurance', isClaims: r === 'claims', isDocuments: r === 'documents', isAnalytics: r === 'analytics', isContacts: r === 'contacts', isSettings: r === 'settings',
+      isBonifikace: r === 'bonifikace', isBonifikaceDetail: r === 'bonifikace-detail',
+      openBonus: (id) => navigate('bonifikace-detail', { fleetId: id }), goBonifikace: () => navigate('bonifikace'),
       claimWizard: state.claimWizard, closeClaimWizard: () => setState({ claimWizard: false }),
       toast: state.toast, rowMenuOpen: state.rowMenu !== null, closeRowMenu: () => setState({ rowMenu: null }),
       goFleets: () => navigate('fleets'),
@@ -264,7 +271,7 @@ export default function FleetPortal() {
       { label: 'Vozidla', value: String(f.vehicles), color: 'var(--ink)' },
       { label: 'Roční pojistné', value: (f.premium / 1000000).toFixed(2).replace('.', ',') + ' mil.', color: 'var(--ink)' },
       { label: 'Ø / vozidlo', value: Math.round(f.premium / (f.vehicles || 1)).toLocaleString('cs-CZ'), color: 'var(--ink)' },
-      { label: 'Škodní poměr', value: Math.round(f.claims / (f.vehicles || 1) * 100 * 4) + ' %', color: 'var(--amber)' },
+      { label: 'Škodní průběh', value: (f.lossRatio ?? Math.round(f.claims / (f.vehicles || 1) * 100 * 4)) + ' %', color: lrColorFor(f.lossRatio ?? 50) },
       { label: 'Rizikové skóre', value: f.risk + '/100', color: riskColor(f.risk) },
     ]
     const tabsDef = [['overview', 'Přehled'], ['vehicles', 'Vozidla'], ['insurance', 'Pojištění'], ['claims', 'Události'], ['documents', 'Dokumenty'], ['analytics', 'Analytika'], ['timeline', 'Timeline']]
@@ -552,6 +559,57 @@ export default function FleetPortal() {
     return { settingRows }
   }
 
+  const bonifikaceVM = () => {
+    if (state.route !== 'bonifikace') return {}
+    const bonifList = allFleets.map((f) => {
+      const bonus = f.bonus || DEFAULT_BONUS
+      const lr = f.lossRatio ?? 0
+      const tier = bonus.find((x) => lr <= x.threshold)
+      return {
+        id: f.id, name: f.name, manager: f.manager,
+        insurer: f.insurers.join(', '), policy: f.policy || '—',
+        lossRatio: lr, lrColor: lrColorFor(lr),
+        rateLabel: tier ? tier.rate + ' %' : '—', rateActive: !!tier, tierCount: bonus.length,
+        onClick: () => navigate('bonifikace-detail', { fleetId: f.id }),
+      }
+    })
+    return { bonifList }
+  }
+
+  const bonifikaceDetailVM = () => {
+    if (state.route !== 'bonifikace-detail') return {}
+    const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]
+    const bonus = f.bonus || DEFAULT_BONUS
+    const lr = f.lossRatio ?? 0
+    const activeTier = bonus.find((x) => lr <= x.threshold)
+    const provize = Math.round(f.premium * 0.12)
+    const tiers = bonus.map((t, i) => {
+      const active = activeTier && t.threshold === activeTier.threshold
+      return {
+        label: `Škodní průběh do ${t.threshold} %`,
+        desc: `Pojišťovna vrací ${t.rate} % z provize`,
+        rate: t.rate + ' %', active,
+        badge: active ? 'Aktuální pásmo' : '',
+        rowStyle: `display:flex;align-items:center;gap:14px;padding:15px 18px;${i < bonus.length - 1 ? 'border-bottom:1px solid var(--border);' : ''}background:${active ? 'var(--green-soft)' : '#fff'}`,
+        rateStyle: `font-size:20px;font-weight:800;letter-spacing:-.5px;color:${active ? 'var(--green)' : 'var(--ink2)'}`,
+        dotStyle: `width:10px;height:10px;border-radius:50%;flex-shrink:0;background:${active ? 'var(--green)' : '#D4D4D8'}`,
+      }
+    })
+    const activeRate = activeTier ? activeTier.rate : 0
+    const rebate = Math.round(provize * activeRate / 100)
+    return {
+      bd: {
+        name: f.name, insurer: f.insurers.join(', '), policy: f.policy || '—', policyStart: f.policyStart || '—',
+        lossRatio: lr, lrColor: lrColorFor(lr), tiers,
+        provizeF: czk(provize), rebateF: czk(rebate), hasActive: !!activeTier, activeRate,
+        note: activeTier
+          ? `Při aktuálním škodním průběhu ${lr} % spadá smlouva do pásma „do ${activeTier.threshold} %" — pojišťovna vrací ${activeTier.rate} % z provize, tj. odhadem ${czk(rebate)} ročně.`
+          : `Při aktuálním škodním průběhu ${lr} % nárok na bonifikaci nevzniká (přesahuje nejvyšší pásmo ${bonus[bonus.length - 1].threshold} %).`,
+        goBack: () => navigate('bonifikace'),
+      },
+    }
+  }
+
   const addVehicleVM = () => {
     if (!state.av) return {}
     const step = state.avStep; const done = step > 3
@@ -674,7 +732,7 @@ export default function FleetPortal() {
 
   const vm = {
     ...shellVM(), ...dashboardVM(), ...fleetsVM(), ...fleetDetailVM(), ...vehiclesVM(), ...vehicleDetailVM(),
-    ...insuranceVM(), ...claimsVM(), ...documentsVM(), ...analyticsVM(), ...contactsVM(), ...settingsVM(), ...wizardVM(), ...addVehicleVM(),
+    ...insuranceVM(), ...claimsVM(), ...documentsVM(), ...analyticsVM(), ...contactsVM(), ...settingsVM(), ...bonifikaceVM(), ...bonifikaceDetailVM(), ...wizardVM(), ...addVehicleVM(),
   }
 
   return <Render vm={vm} />
