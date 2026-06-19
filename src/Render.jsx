@@ -958,6 +958,8 @@ function FleetDetail({ vm }) {
         </div>
       )}
 
+      {fd.isClaims && <ClaimsTable rows={fd.parkClaims} title="Nahlášené škody parku" />}
+
       {fd.isOther && (
         <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:48px;text-align:center;color:var(--ink3)')}>
           <div style={S('width:52px;height:52px;border-radius:13px;background:#F4F4F5;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--ink3)')}>{fd.otherIcon}</div>
@@ -1277,6 +1279,41 @@ function Insurance({ vm }) {
   )
 }
 
+/* ============================ ŠKODY (sdílená tabulka) ============================ */
+function ClaimsTable({ rows, title }) {
+  return (
+    <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+      {title && <div style={S('padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:700')}>{title}</div>}
+      <HScroll minW={900}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+          <div style={S('width:34px;flex-shrink:0')}></div>
+          <div style={S('flex:1;min-width:0')}>Vozidlo</div>
+          <div style={S('width:54px')}>Riziko</div>
+          <div style={S('width:104px')}>Nahlásil</div>
+          <div style={S('width:86px')}>Nahlášeno</div>
+          <div style={S('width:96px;text-align:right')}>Výše škody</div>
+          <div style={S('width:104px')}>Stav</div>
+          <div style={S('width:96px;text-align:right')}>Vyplaceno</div>
+        </div>
+        {rows.length === 0 ? (
+          <div style={S('padding:28px 18px;text-align:center;font-size:13px;color:var(--ink3)')}>Žádné nahlášené škody</div>
+        ) : rows.map((c, i) => (
+          <Hov key={i} onClick={c.onClick} base="display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer" hover="background:#FAFAFA">
+            <div style={S(`width:34px;height:34px;border-radius:9px;background:${c.bg};color:${c.color};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{ic('alert', 16)}</div>
+            <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums')}>{c.plate} <span style={S('font-weight:600;color:var(--ink2)')}>· {c.brand} {c.model}</span></div><div style={S('font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>VIN {c.vin} · {c.id} · {c.type}</div></div>
+            <div style={S('width:54px')}><span style={S(c.riskStyle)}>{c.risk}</span></div>
+            <div style={S('width:104px;font-size:12.5px;color:var(--ink2)')}>{c.reportedBy}</div>
+            <div style={S('width:86px;font-size:12.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{c.date}</div>
+            <div style={S('width:96px;text-align:right;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums')}>{c.estimateF}</div>
+            <div style={S('width:104px')}><span style={S(c.chipStyle)}>{c.statusLabel}</span></div>
+            <div style={S(`width:96px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;font-weight:${c.paid ? '700' : '400'};color:${c.paid ? 'var(--green)' : 'var(--ink3)'}`)}>{c.payoutF}</div>
+          </Hov>
+        ))}
+      </HScroll>
+    </div>
+  )
+}
+
 /* ============================ CLAIMS ============================ */
 function Claims({ vm }) {
   const mob = vm.vp.isMobile
@@ -1300,33 +1337,7 @@ function Claims({ vm }) {
           </div>
         </div>
       </div>
-      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
-        <div style={S('padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:700')}>Všechny události</div>
-        <HScroll minW={1140}>
-          <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
-            <div style={S('width:38px;flex-shrink:0')}></div>
-            <div style={S('flex:1;min-width:0')}>Vozidlo</div>
-            <div style={S('width:64px')}>Riziko</div>
-            <div style={S('width:120px')}>Nahlásil</div>
-            <div style={S('width:92px')}>Nahlášeno</div>
-            <div style={S('width:106px;text-align:right')}>Výše škody</div>
-            <div style={S('width:120px')}>Stav</div>
-            <div style={S('width:106px;text-align:right')}>Vyplaceno</div>
-          </div>
-          {vm.claimRows.map((c, i) => (
-            <Hov key={i} onClick={c.onClick} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer" hover="background:#FAFAFA">
-              <div style={S(`width:38px;height:38px;border-radius:10px;background:${c.bg};color:${c.color};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{ic('alert', 17)}</div>
-              <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums')}>{c.plate} <span style={S('font-weight:600;color:var(--ink2)')}>· {c.brand} {c.model}</span></div><div style={S('font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>VIN {c.vin} · {c.id} · {c.type}</div></div>
-              <div style={S('width:64px')}><span style={S(c.riskStyle)}>{c.risk}</span></div>
-              <div style={S('width:120px;font-size:12.5px;color:var(--ink2)')}>{c.reportedBy}</div>
-              <div style={S('width:92px;font-size:12.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{c.date}</div>
-              <div style={S('width:106px;text-align:right;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums')}>{c.estimateF}</div>
-              <div style={S('width:120px')}><span style={S(c.chipStyle)}>{c.statusLabel}</span></div>
-              <div style={S(`width:106px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;font-weight:${c.paid ? '700' : '400'};color:${c.paid ? 'var(--green)' : 'var(--ink3)'}`)}>{c.payoutF}</div>
-            </Hov>
-          ))}
-        </HScroll>
-      </div>
+      <ClaimsTable rows={vm.claimRows} title="Všechny škody" />
     </div>
   )
 }

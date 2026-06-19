@@ -19,6 +19,7 @@ const MONTHS = ['Čvc', 'Srp', 'Zář', 'Říj', 'Lis', 'Pro', 'Led', 'Úno', 'B
 const INS_COLORS = { Kooperativa: '#2058C9', Allianz: '#16A34A', 'ČPP': '#C2780C', Generali: '#8B5CF6', UNIQA: '#0EA5A5', 'ČSOB': '#9B0E25' }
 const DEFAULT_BONUS = [{ threshold: 30, rate: 15 }, { threshold: 40, rate: 10 }, { threshold: 50, rate: 5 }]
 const INSURER_CODE = { Kooperativa: '7720', Allianz: '4055', 'ČPP': '0019', Generali: '5544', UNIQA: '2401', 'ČSOB': '8830', 'ČSOB Poj.': '8830' }
+const RISK_META = { POV: { bg: 'var(--blue-soft)', c: 'var(--blue-ink)' }, HAV: { bg: 'var(--star-soft)', c: 'var(--star-ink)' }, Skla: { bg: '#E3F4F5', c: '#0E7C86' } }
 // Sjednatelná rizika — podíl na pojistném a pravidlo sjednání na vozidlo (deterministicky)
 const RISKS = [
   { key: 'pr', label: 'Povinné ručení', icon: 'shield', frac: 0.34, bg: 'var(--star-soft)', color: 'var(--star)', has: () => true },
@@ -83,6 +84,20 @@ export default function FleetPortal() {
   const stop = (e) => e.stopPropagation()
   const showToast = (msg) => { if (ttRef.current) clearTimeout(ttRef.current); setState({ toast: msg }); ttRef.current = setTimeout(() => setState({ toast: null }), 3800) }
   const openUnsub = (v) => setState({ rowMenu: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026', unsub: { plate: v.plate, brand: v.brand, model: v.model, vin: v.vin, fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), renewal: v.renewal } })
+  const buildClaimRow = (c) => {
+    const cm = claimStatusMeta[c.status]
+    const v = vehiclesData.find((x) => x.id === c.vId) || {}
+    const rm = RISK_META[c.risk] || { bg: '#F1F1F3', c: 'var(--ink2)' }
+    return {
+      id: c.id, type: c.type, risk: c.risk, reportedBy: c.reportedBy, date: c.date, insurer: c.insurer,
+      plate: v.plate || '—', vin: v.vin || '—', brand: v.brand || '', model: v.model || '',
+      estimateF: czk(c.estimate), paid: c.payout > 0, payoutF: c.payout > 0 ? czk(c.payout) : '—',
+      statusLabel: cm.label, bg: cm.bg, color: cm.c,
+      chipStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:${cm.c};background:${cm.bg};padding:3px 9px;border-radius:20px;white-space:nowrap`,
+      riskStyle: `display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:${rm.c};background:${rm.bg};padding:3px 8px;border-radius:6px;white-space:nowrap`,
+      onClick: () => openVehicle(c.vId),
+    }
+  }
   const setVf = (k, v) => setState((s) => ({ vf: { ...s.vf, [k]: v } }))
   const toggleSel = (id) => setState((s) => { const n = { ...s.selected }; if (n[id]) delete n[id]; else n[id] = true; return { selected: n } })
 
@@ -148,7 +163,7 @@ export default function FleetPortal() {
       ['fleets', 'Vozové parky', 'fleets', null],
       ['vehicles', 'Vozidla', 'car', '312'],
       ['insurance', 'Pojištění', 'shield', null],
-      ['claims', 'Pojistné události', 'alert', '9'],
+      ['claims', 'Škody', 'alert', '9'],
       ['documents', 'Dokumenty', 'file', null],
       ['bonifikace', 'Bonifikace', 'percent', null],
       ['contacts', 'Kontakty', 'users', null],
@@ -170,7 +185,7 @@ export default function FleetPortal() {
       fleets: ['Vozové parky', '6 parků · 312 vozidel'],
       vehicles: ['Vozidla', '312 vozidel celkem'],
       insurance: ['Pojištění', 'Smlouvy a krytí napříč parky'],
-      claims: ['Pojistné události', '9 otevřených · 47 uzavřených letos'],
+      claims: ['Škody', '9 otevřených · 47 uzavřených letos'],
       documents: ['Dokumenty', 'Centrální úložiště dokumentů'],
       'documents-detail': ['Pojistné smlouvy', 'Flotilové smlouvy a jejich dokumenty'],
       bonifikace: ['Bonifikace', 'Vrácení části pojistného dle škodního průběhu'],
@@ -311,7 +326,7 @@ export default function FleetPortal() {
       { label: 'Škodní průběh', value: (f.lossRatio ?? Math.round(f.claims / (f.vehicles || 1) * 100 * 4)) + ' %', color: lrColorFor(f.lossRatio ?? 50) },
       { label: 'Rizikové skóre', value: f.risk + '/100', color: riskColor(f.risk) },
     ]
-    const tabsDef = [['overview', 'Přehled'], ['vehicles', 'Vozidla'], ['insurers', 'Pojistitelé'], ['insurance', 'Pojištění'], ['claims', 'Události'], ['documents', 'Dokumenty'], ['analytics', 'Analytika'], ['timeline', 'Timeline']]
+    const tabsDef = [['overview', 'Přehled'], ['vehicles', 'Vozidla'], ['insurers', 'Pojistitelé'], ['insurance', 'Pojištění'], ['claims', 'Škody'], ['documents', 'Dokumenty'], ['analytics', 'Analytika'], ['timeline', 'Timeline']]
     const fleetTabs = tabsDef.map(([id, label]) => { const on = tab === id; return { label, onClick: () => setState({ fleetTab: id }), style: `padding:10px 14px;font-size:13.5px;font-weight:600;cursor:pointer;color:${on ? 'var(--blue-ink)' : 'var(--ink3)'};border-bottom:2px solid ${on ? 'var(--blue)' : 'transparent'};margin-bottom:-1px` } })
     const summary = [
       { label: 'Předepsané pojistné', value: (f.premium / 1000000).toFixed(2).replace('.', ',') + ' mil.', sub: 'ročně', color: 'var(--ink)' },
@@ -384,7 +399,8 @@ export default function FleetPortal() {
         endedVehicles: fleetEnded, endedCount: fleetEnded.length,
         parkInsurers, insurersTotalF, insurersCount: parkInsurers.length,
         riskRows, riskTotalF, riskCount: riskRows.length, activeCount: pv.length,
-        isOverview: tab === 'overview', isVehicles: tab === 'vehicles', isInsurers: tab === 'insurers', isInsurance: tab === 'insurance', isOther: !['overview', 'vehicles', 'insurers', 'insurance'].includes(tab),
+        parkClaims: claimsData.filter((c) => { const cv = vehiclesData.find((x) => x.id === c.vId); return cv && cv.fleet === f.id }).map(buildClaimRow),
+        isOverview: tab === 'overview', isVehicles: tab === 'vehicles', isInsurers: tab === 'insurers', isInsurance: tab === 'insurance', isClaims: tab === 'claims', isOther: !['overview', 'vehicles', 'insurers', 'insurance', 'claims'].includes(tab),
         otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
       },
       fleetTabs,
@@ -489,7 +505,7 @@ export default function FleetPortal() {
       { date: '18. 11. 2025', title: 'Změna řidiče', desc: 'Nový řidič ' + v.driver, icon: ic('user1', 16), bg: 'var(--blue-soft)', color: 'var(--blue)' },
       { date: '3. 4. ' + v.year, title: 'Vozidlo přidáno', desc: 'Zařazeno do parku ' + fleetName(v.fleet), icon: ic('plus', 16), bg: 'var(--blue-soft)', color: 'var(--blue)' },
     ]
-    const tabsDef = [['overview', 'Přehled'], ['insurance', 'Pojištění'], ['claims', 'Události'], ['documents', 'Dokumenty'], ['timeline', 'Timeline'], ['costs', 'Náklady'], ['notes', 'Poznámky']]
+    const tabsDef = [['overview', 'Přehled'], ['insurance', 'Pojištění'], ['claims', 'Škody'], ['documents', 'Dokumenty'], ['timeline', 'Timeline'], ['costs', 'Náklady'], ['notes', 'Poznámky']]
     const vehicleTabs = tabsDef.map(([id, label]) => { const on = tab === id; return { label, onClick: () => setState({ vehicleTab: id }), style: `padding:10px 14px;font-size:13.5px;font-weight:600;cursor:pointer;color:${on ? 'var(--blue-ink)' : 'var(--ink3)'};border-bottom:2px solid ${on ? 'var(--blue)' : 'transparent'};margin-bottom:-1px` } })
     const otherMap = {
       documents: ['Dokumenty vozidla', 'Velký a malý technický průkaz, zelená karta, smlouvy a faktury k tomuto vozidlu.', ic('file', 24)],
@@ -546,21 +562,7 @@ export default function FleetPortal() {
     const claimsByFleet = cf.map(([name, count, color]) => ({ name, count, color, w: Math.round(count / cfMax * 100) + '%' }))
     const ct = [5, 4, 6, 3, 5, 4, 7, 4, 6, 3, 4, 2]; const ctMax = Math.max(...ct)
     const claimTrend = ct.map((v, i) => ({ h: Math.round(v / ctMax * 100) + '%', color: i >= 10 ? 'var(--star)' : '#E3B7BE', label: MONTHS[i][0] }))
-    const riskMeta = { POV: { bg: 'var(--blue-soft)', c: 'var(--blue-ink)' }, HAV: { bg: 'var(--star-soft)', c: 'var(--star-ink)' }, Skla: { bg: '#E3F4F5', c: '#0E7C86' } }
-    const claimRows = claimsData.map((c) => {
-      const cm = claimStatusMeta[c.status]
-      const v = vehiclesData.find((x) => x.id === c.vId) || {}
-      const rm = riskMeta[c.risk] || { bg: '#F1F1F3', c: 'var(--ink2)' }
-      return {
-        id: c.id, type: c.type, risk: c.risk, reportedBy: c.reportedBy, date: c.date, insurer: c.insurer,
-        plate: v.plate || '—', vin: v.vin || '—', brand: v.brand || '', model: v.model || '',
-        estimateF: czk(c.estimate), paid: c.payout > 0, payoutF: c.payout > 0 ? czk(c.payout) : '—',
-        statusLabel: cm.label, bg: cm.bg, color: cm.c,
-        chipStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:${cm.c};background:${cm.bg};padding:3px 9px;border-radius:20px;white-space:nowrap`,
-        riskStyle: `display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:${rm.c};background:${rm.bg};padding:3px 9px;border-radius:6px;white-space:nowrap`,
-        onClick: () => openVehicle(c.vId),
-      }
-    })
+    const claimRows = claimsData.map(buildClaimRow)
     return { claimStats, claimsByFleet, claimTrend, claimRows }
   }
 
