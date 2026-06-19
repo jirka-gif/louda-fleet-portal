@@ -1,5 +1,5 @@
 import React from 'react'
-import { css as S, Hov, Icon } from './helpers.jsx'
+import { css as S, Hov, Icon, InsurerLogo } from './helpers.jsx'
 
 const ic = (name, size = 18, sw = 1.8) => <Icon name={name} size={size} sw={sw} />
 const LOGO = '/fleet-portal/logo-louda.svg'
@@ -159,9 +159,12 @@ function DocPreviewModal({ vm }) {
         <div style={S('flex:1;overflow-y:auto;background:#F1F1F3;padding:24px')}>
           <div style={S('max-width:600px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.08);padding:44px 48px;min-height:780px')}>
             <div style={S('display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:30px')}>
-              <div>
-                <div style={S('font-size:16px;font-weight:800;letter-spacing:.5px;color:var(--star)')}>{d.insurer}</div>
-                <div style={S('font-size:11px;color:var(--ink3);margin-top:2px')}>Pojistitel</div>
+              <div style={S('display:flex;align-items:center;gap:11px')}>
+                <InsurerLogo name={d.insurer} size={42} />
+                <div>
+                  <div style={S('font-size:16px;font-weight:800;letter-spacing:.3px')}>{d.insurer}</div>
+                  <div style={S('font-size:11px;color:var(--ink3);margin-top:2px')}>Pojistitel</div>
+                </div>
               </div>
               <div style={S('text-align:right;font-size:11px;color:var(--ink3)')}>Strana 1 / 3<br />{d.date}</div>
             </div>
@@ -978,7 +981,7 @@ function DocumentsDetail({ vm }) {
         {dd.contracts.map((c) => (
           <div key={c.id} style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
             <Hov onClick={c.toggle} base={c.headStyle} hover="background:#FAFAFA">
-              <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:11px;background:var(--star-soft);color:var(--star);display:flex;align-items:center;justify-content:center')}>{ic('shield', 20)}</div>
+              <InsurerLogo name={c.insurer} size={40} />
               <div style={S('flex:1;min-width:0')}>
                 <div style={S('font-size:14.5px;font-weight:700;line-height:1.2')}>{c.insurer}</div>
                 <div style={S('font-size:12px;color:var(--ink3)')}>Flotilová smlouva č. <span style={S('font-variant-numeric:tabular-nums')}>{c.policy}</span> · {c.fleetName}</div>
@@ -1027,7 +1030,7 @@ function Bonifikace({ vm }) {
           </div>
           {vm.bonifList.map((b) => (
             <Hov key={b.id} onClick={b.onClick} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);cursor:pointer" hover="background:#FAFAFA">
-              <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('percent', 20)}</div>
+              <InsurerLogo name={b.insurer} size={40} />
               <div style={S('flex:1;min-width:0')}><div style={S('font-size:14px;font-weight:700;line-height:1.2')}>{b.insurer}</div><div style={S('font-size:12px;color:var(--ink3)')}>Flotilová smlouva č. <span style={S('font-variant-numeric:tabular-nums')}>{b.policy}</span></div></div>
               <div style={S(`width:120px;text-align:right;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums;color:${b.lrColor}`)}>{b.lossRatio} %</div>
               <div style={S('width:180px;text-align:right')}>{b.rateActive ? (<><span style={S('font-size:12px;font-weight:700;color:var(--green);background:var(--green-soft);padding:4px 10px;border-radius:20px')}>{b.rateLabel} z pojistného</span><div style={S('font-size:12px;color:var(--ink2);font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums')}>{b.rebateF} ročně</div></>) : <span style={S('font-size:12.5px;color:var(--ink3)')}>bez nároku</span>}</div>
@@ -1050,7 +1053,7 @@ function BonifikaceDetail({ vm }) {
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px;margin-bottom:16px')}>
         <div style={S('display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px')}>
           <div style={S('display:flex;gap:16px;align-items:center')}>
-            <div style={S('width:56px;height:56px;border-radius:14px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('percent', 26)}</div>
+            <InsurerLogo name={bd.insurer} size={56} />
             <div>
               <div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px')}>{bd.insurer}</div>
               <div style={S('font-size:13px;color:var(--ink3);margin-top:3px')}>Flotilová smlouva č. <span style={S('color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums')}>{bd.policy}</span></div>

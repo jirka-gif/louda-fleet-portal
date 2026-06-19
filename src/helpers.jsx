@@ -118,6 +118,35 @@ const PATHS = {
   percent: '<path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
 }
 
+// ---------------------------------------------------------------------------
+// InsurerLogo — stylized brand mark (monogram chip in the insurer's brand
+// colour). A placeholder for the real (trademarked) logo; swap for an <img>
+// pointing at /public if licensed assets are available.
+// ---------------------------------------------------------------------------
+const INSURER_BRAND = {
+  'Kooperativa': { bg: '#E2231A', fg: '#fff', label: 'K' },
+  'Allianz': { bg: '#003781', fg: '#fff', label: 'A' },
+  'ČPP': { bg: '#0069B4', fg: '#fff', label: 'ČPP' },
+  'Generali': { bg: '#C8102E', fg: '#fff', label: 'G' },
+  'UNIQA': { bg: '#001E50', fg: '#fff', label: 'U' },
+  'ČSOB Poj.': { bg: '#003D7D', fg: '#fff', label: 'ČSOB' },
+  'ČSOB': { bg: '#003D7D', fg: '#fff', label: 'ČSOB' },
+}
+
+export function InsurerLogo({ name, size = 40, radius }) {
+  const b = INSURER_BRAND[name] || { bg: '#3F3F46', fg: '#fff', label: (name || '?').slice(0, 1) }
+  const r = radius ?? Math.round(size * 0.28)
+  const fs = b.label.length >= 3 ? Math.round(size * 0.30) : Math.round(size * 0.46)
+  return (
+    <div style={{
+      width: size, height: size, flexShrink: 0, borderRadius: r,
+      background: b.bg, color: b.fg, display: 'flex', alignItems: 'center',
+      justifyContent: 'center', fontWeight: 800, fontSize: fs,
+      letterSpacing: b.label.length >= 3 ? '.2px' : '0', lineHeight: 1,
+    }}>{b.label}</div>
+  )
+}
+
 export function Icon({ name, size = 18, sw = 1.8, style }) {
   return (
     <svg
