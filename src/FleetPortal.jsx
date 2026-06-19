@@ -526,6 +526,12 @@ export default function FleetPortal() {
       { name: 'Asistenční služby', icon: ic('wrench', 20), bg: 'var(--amber-soft)', color: 'var(--amber)', insurer: 'Global Assistance', policy: 'AS-' + v.plate.replace(/\s/g, ''), premiumF: czk(Math.round(v.premium * 0.03)), coverage: 'ČR + Evropa', renewal: v.renewal, deductible: '—', status: 'active' },
       { name: 'Právní ochrana', icon: ic('doc2', 20), bg: '#F1F1F3', color: 'var(--ink2)', insurer: 'D.A.S.', policy: 'PO-' + v.plate.replace(/\s/g, ''), premiumF: czk(Math.round(v.premium * 0.02)), coverage: 'do 1 mil. Kč', renewal: v.renewal, deductible: '—', status: 'active' },
     ].map((p) => ({ ...p, statusLabel: statusMeta[p.status].label, chipStyle: pchip(p.status) }))
+    const productsTotal = products.filter((p) => p.status !== 'nocasco').reduce((s, p) => s + parseInt(String(p.premiumF).replace(/[^\d]/g, ''), 10), 0)
+    const productsExport = {
+      filename: `pojisteni-${v.plate.replace(/\s/g, '')}`, title: `Pojištění – ${v.plate} ${v.brand} ${v.model}`,
+      columns: [{ key: 'riziko', label: 'Riziko' }, { key: 'pojistovna', label: 'Pojišťovna' }, { key: 'smlouva', label: 'Číslo smlouvy' }, { key: 'limit', label: 'Limit / pojistná částka' }, { key: 'spoluucast', label: 'Spoluúčast' }, { key: 'obnova', label: 'Obnova' }, { key: 'pojistne', label: 'Roční pojistné' }, { key: 'stav', label: 'Stav' }],
+      rows: products.map((p) => ({ riziko: p.name, pojistovna: p.insurer, smlouva: p.policy, limit: p.coverage, spoluucast: p.deductible, obnova: p.renewal, pojistne: p.premiumF, stav: p.statusLabel })),
+    }
     const claims = claimsData.filter((c) => c.vId === v.id).map((c) => {
       const cm = claimStatusMeta[c.status]
       return { ...c, statusLabel: cm.label, chipStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:${cm.c};background:${cm.bg};padding:3px 9px;border-radius:20px`, dot: cm.c, estimateF: czk(c.estimate), progressW: c.progress + '%' }
@@ -549,7 +555,7 @@ export default function FleetPortal() {
       vehicleTabs,
       vd: {
         brand: v.brand, model: v.model, plate: v.plate, driver: v.driver, fleetName: fleetName(v.fleet),
-        statusLabel: m.label, chipStyle: statusChip(v.status), facts, actions, specs, assign, products, claims, timeline,
+        statusLabel: m.label, chipStyle: statusChip(v.status), facts, actions, specs, assign, products, productsExport, productsTotalF: czk(productsTotal), claims, timeline,
         premiumF: czk(v.premium), productCount: products.filter((p) => p.status !== 'nocasco').length, renewal: v.renewal,
         isOverview: tab === 'overview', isInsurance: tab === 'insurance', isClaims: tab === 'claims', isTimeline: tab === 'timeline',
         isOther: ['documents', 'costs', 'notes'].includes(tab), otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],

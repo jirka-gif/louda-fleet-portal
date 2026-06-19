@@ -1306,29 +1306,41 @@ function VehicleDetail({ vm }) {
       )}
 
       {vd.isInsurance && (
-        <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px')}>
-          {vd.products.map((p, i) => (
-            <div key={i} style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px')}>
-              <div style={S('display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px')}>
-                <div style={S('display:flex;align-items:center;gap:11px')}>
-                  <div style={S(`width:40px;height:40px;border-radius:10px;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center`)}>{p.icon}</div>
-                  <div><div style={S('font-size:14.5px;font-weight:700')}>{p.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{p.insurer} · {p.policy}</div></div>
-                </div>
-                <span style={S(p.chipStyle)}>{p.statusLabel}</span>
+        <div>
+          <div style={S('display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px')}>
+            <div style={S('font-size:13px;color:var(--ink3)')}>{vd.products.length} sjednaných rizik · roční pojistné <span style={S('color:var(--ink);font-weight:700')}>{vd.productsTotalF}</span></div>
+            <ExportMenu {...vd.productsExport} />
+          </div>
+          <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+            <HScroll minW={860}>
+              <div style={S('display:grid;grid-template-columns:1fr 150px 124px 116px 96px;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+                <div>Riziko</div>
+                <div>Limit / poj. částka</div>
+                <div>Spoluúčast</div>
+                <div style={S('text-align:right')}>Roční pojistné</div>
+                <div style={S('text-align:right')}>Akce</div>
               </div>
-              <div style={S('display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:13px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)')}>
-                <div><div style={S('font-size:11px;color:var(--ink3)')}>Roční pojistné</div><div style={S('font-size:16px;font-weight:800;letter-spacing:-.3px;margin-top:2px')}>{p.premiumF}</div></div>
-                <div><div style={S('font-size:11px;color:var(--ink3)')}>Krytí / limit</div><div style={S('font-size:13.5px;font-weight:600;margin-top:2px')}>{p.coverage}</div></div>
-                <div><div style={S('font-size:11px;color:var(--ink3)')}>Obnova</div><div style={S('font-size:13.5px;font-weight:600;margin-top:2px')}>{p.renewal}</div></div>
-                <div><div style={S('font-size:11px;color:var(--ink3)')}>Spoluúčast</div><div style={S('font-size:13.5px;font-weight:600;margin-top:2px')}>{p.deductible}</div></div>
-              </div>
-              <div style={S('display:flex;gap:7px;margin-top:14px;flex-wrap:wrap')}>
-                <Hov as="span" base="font-size:12px;font-weight:600;color:var(--ink2);border:1px solid var(--border2);padding:6px 11px;border-radius:8px;cursor:pointer" hover="background:#FAFAFA">Upravit krytí</Hov>
-                <span style={S('font-size:12px;font-weight:600;color:var(--star);border:1px solid var(--star-soft);background:var(--star-soft);padding:6px 11px;border-radius:8px;cursor:pointer')}>Porovnat nabídky</span>
-                <Hov as="span" base="font-size:12px;font-weight:600;color:var(--ink2);border:1px solid var(--border2);padding:6px 11px;border-radius:8px;cursor:pointer" hover="background:#FAFAFA">Stáhnout PDF</Hov>
-              </div>
-            </div>
-          ))}
+              {vd.products.map((p, i) => (
+                <Hov key={i} base="display:grid;grid-template-columns:1fr 150px 124px 116px 96px;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
+                  <div style={S('display:flex;align-items:center;gap:11px;min-width:0')}>
+                    <div style={S(`width:34px;height:34px;border-radius:9px;background:${p.bg};color:${p.color};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{p.icon}</div>
+                    <div style={S('min-width:0')}>
+                      <div style={S('display:flex;align-items:center;gap:8px')}><span style={S('font-size:13.5px;font-weight:700')}>{p.name}</span>{p.status === 'nocasco' ? <span style={S(p.chipStyle)}>{p.statusLabel}</span> : null}</div>
+                      <div style={S('font-size:11.5px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap')}>{p.insurer} · {p.policy}</div>
+                    </div>
+                  </div>
+                  <div style={S('font-size:13px;font-weight:600;color:var(--ink2)')}>{p.coverage}</div>
+                  <div style={S('font-size:13px;color:var(--ink2)')}>{p.deductible}</div>
+                  <div style={S('text-align:right;font-size:13.5px;font-weight:800;letter-spacing:-.3px;font-variant-numeric:tabular-nums')}>{p.premiumF}</div>
+                  <div style={S('display:flex;gap:4px;justify-content:flex-end;color:var(--ink3)')}>
+                    <Hov as="span" base="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer" hover="background:#F1F1F3;color:var(--ink)" title="Upravit krytí">{ic('edit', 16)}</Hov>
+                    <Hov as="span" base="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--star)" hover="background:var(--star-soft)" title="Porovnat nabídky">{ic('scales', 16)}</Hov>
+                    <Hov as="span" base="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer" hover="background:#F1F1F3;color:var(--ink)" title="Stáhnout PDF">{ic('download', 16)}</Hov>
+                  </div>
+                </Hov>
+              ))}
+            </HScroll>
+          </div>
         </div>
       )}
 

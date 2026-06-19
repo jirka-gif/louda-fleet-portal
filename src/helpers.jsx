@@ -116,6 +116,8 @@ const PATHS = {
   grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>',
   rows: '<rect x="3" y="5" width="18" height="4" rx="1"/><rect x="3" y="14" width="18" height="4" rx="1"/>',
   percent: '<path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M14 6l4 4"/>',
+  scales: '<path d="M12 4v16"/><path d="M7 20h10"/><path d="M5 7h14"/><path d="M8 4l-4 8a3 3 0 0 0 6 0L6 4"/><path d="M18 4l-4 8a3 3 0 0 0 6 0l-4-8"/>',
 }
 
 // ---------------------------------------------------------------------------
