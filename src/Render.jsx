@@ -885,6 +885,43 @@ function FleetDetail({ vm }) {
         </>
       )}
 
+      {fd.isInsurance && (
+        <div>
+          <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:14px')}>
+            <div style={S('background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px')}><div style={S('font-size:12px;color:var(--ink3)')}>Sjednaných rizik</div><div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:5px')}>{fd.riskCount}</div></div>
+            <div style={S('background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px')}><div style={S('font-size:12px;color:var(--ink3)')}>Aktivních vozidel</div><div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:5px')}>{fd.activeCount}</div></div>
+            <div style={S('background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px')}><div style={S('font-size:12px;color:var(--ink3)')}>Objem pojistného celkem</div><div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:5px')}>{fd.riskTotalF}</div></div>
+          </div>
+          <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+            <HScroll minW={720}>
+              <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+                <div style={S('width:38px;flex-shrink:0')}></div>
+                <div style={S('flex:1;min-width:0')}>Riziko</div>
+                <div style={S('width:90px;text-align:right')}>Vozidla</div>
+                <div style={S('width:120px')}>Pokrytí</div>
+                <div style={S('width:150px;text-align:right')}>Objem pojistného</div>
+              </div>
+              {fd.riskRows.map((r, i) => (
+                <Hov key={i} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
+                  <div style={S(`width:38px;height:38px;flex-shrink:0;border-radius:10px;background:${r.bg};color:${r.color};display:flex;align-items:center;justify-content:center`)}>{r.icon}</div>
+                  <div style={S('flex:1;min-width:0;font-size:13.5px;font-weight:600')}>{r.label}</div>
+                  <div style={S('width:90px;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums')}>{r.count}</div>
+                  <div style={S('width:120px')}><div style={S('display:flex;align-items:center;gap:8px')}><div style={S('flex:1;height:6px;background:#F1F1F3;border-radius:4px;overflow:hidden')}><div style={S(`height:100%;width:${r.coverage}%;background:${r.color};border-radius:4px`)}></div></div><span style={S('font-size:11px;color:var(--ink3);font-variant-numeric:tabular-nums;width:30px;text-align:right')}>{r.coverage}%</span></div></div>
+                  <div style={S('width:150px;text-align:right;font-weight:800;font-size:14px;letter-spacing:-.3px;font-variant-numeric:tabular-nums')}>{r.premiumF}</div>
+                </Hov>
+              ))}
+              <div style={S('display:flex;align-items:center;gap:14px;padding:13px 18px;background:#FBFBFC')}>
+                <div style={S('width:38px;flex-shrink:0')}></div>
+                <div style={S('flex:1;min-width:0;font-size:12.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>Aktivní objem pojistného celkem</div>
+                <div style={S('width:90px')}></div>
+                <div style={S('width:120px')}></div>
+                <div style={S('width:150px;text-align:right;font-weight:800;font-size:14px;letter-spacing:-.3px;font-variant-numeric:tabular-nums')}>{fd.riskTotalF}</div>
+              </div>
+            </HScroll>
+          </div>
+        </div>
+      )}
+
       {fd.isInsurers && (
         <div>
           <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:14px')}>

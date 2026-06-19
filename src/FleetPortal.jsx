@@ -19,6 +19,21 @@ const MONTHS = ['Čvc', 'Srp', 'Zář', 'Říj', 'Lis', 'Pro', 'Led', 'Úno', 'B
 const INS_COLORS = { Kooperativa: '#2058C9', Allianz: '#16A34A', 'ČPP': '#C2780C', Generali: '#8B5CF6', UNIQA: '#0EA5A5', 'ČSOB': '#9B0E25' }
 const DEFAULT_BONUS = [{ threshold: 30, rate: 15 }, { threshold: 40, rate: 10 }, { threshold: 50, rate: 5 }]
 const INSURER_CODE = { Kooperativa: '7720', Allianz: '4055', 'ČPP': '0019', Generali: '5544', UNIQA: '2401', 'ČSOB': '8830', 'ČSOB Poj.': '8830' }
+// Sjednatelná rizika — podíl na pojistném a pravidlo sjednání na vozidlo (deterministicky)
+const RISKS = [
+  { key: 'pr', label: 'Povinné ručení', icon: 'shield', frac: 0.34, bg: 'var(--star-soft)', color: 'var(--star)', has: () => true },
+  { key: 'hav', label: 'Havarijní pojištění', icon: 'car', frac: 0.42, bg: 'var(--star-soft)', color: 'var(--star)', has: (v) => v.status !== 'nocasco' },
+  { key: 'skla', label: 'Pojištění skel', icon: 'glass', frac: 0.06, bg: 'var(--blue-soft)', color: 'var(--blue)', has: () => true },
+  { key: 'asist', label: 'Asistenční služby', icon: 'wrench', frac: 0.03, bg: 'var(--amber-soft)', color: 'var(--amber)', has: () => true },
+  { key: 'gap', label: 'GAP – pojištění finanční ztráty', icon: 'refresh', frac: 0.05, bg: 'var(--green-soft)', color: 'var(--green)', has: (v, i) => v.status !== 'nocasco' && i % 4 !== 3 },
+  { key: 'zver', label: 'Střet se zvěří', icon: 'alert', frac: 0.02, bg: 'var(--green-soft)', color: 'var(--green)', has: (v, i) => i % 5 !== 0 },
+  { key: 'vandal', label: 'Vandalismus', icon: 'alert', frac: 0.02, bg: '#F1F1F3', color: 'var(--ink2)', has: (v, i) => i % 3 !== 2 },
+  { key: 'uraz', label: 'Úrazové pojištění osob', icon: 'user1', frac: 0.02, bg: 'var(--blue-soft)', color: 'var(--blue)', has: (v, i) => i % 2 === 0 },
+  { key: 'zivel', label: 'Živelní pojištění', icon: 'alert', frac: 0.015, bg: 'var(--amber-soft)', color: 'var(--amber)', has: (v, i) => i % 3 !== 0 },
+  { key: 'zavazadla', label: 'Zavazadla', icon: 'archive', frac: 0.01, bg: '#F1F1F3', color: 'var(--ink2)', has: (v, i) => i % 4 === 0 },
+  { key: 'nahradni', label: 'Náhradní vozidlo', icon: 'swap', frac: 0.015, bg: 'var(--blue-soft)', color: 'var(--blue)', has: (v, i) => i % 3 === 1 },
+  { key: 'pravni', label: 'Právní ochrana', icon: 'doc2', frac: 0.02, bg: '#F1F1F3', color: 'var(--ink2)', has: () => true },
+]
 const fleetInsurerPolicy = (insurer, fleetId) => {
   const base = INSURER_CODE[insurer] || '6000'
   const seed = (parseInt((fleetId || 'f1').replace(/\D/g, '') || '1', 10) * 137 + insurer.length * 29 + (insurer.charCodeAt(0) || 65)) % 1000000
@@ -347,6 +362,13 @@ export default function FleetPortal() {
     if (parkInsurers.length === 0) parkInsurers = (f.insurers || []).map((name) => ({ name, policy: fleetInsurerPolicy(name, f.id), count: 0, premium: 0, premiumF: czk(0) }))
     const insurersTotalF = czk(parkInsurers.reduce((a, b) => a + b.premium, 0))
 
+    const riskRows = RISKS.map((r) => {
+      let count = 0, premium = 0
+      pv.forEach((v, i) => { if (r.has(v, i)) { count++; premium += Math.round(v.premium * r.frac) } })
+      return { label: r.label, icon: ic(r.icon, 18), bg: r.bg, color: r.color, count, coverage: pv.length ? Math.round(count / pv.length * 100) : 0, premium, premiumF: czk(premium) }
+    }).filter((r) => r.count > 0)
+    const riskTotalF = czk(riskRows.reduce((a, b) => a + b.premium, 0))
+
     const otherMap = {
       insurance: ['Pojištění parku', 'Souhrn všech smluv a krytí v tomto parku — přejděte do modulu Pojištění pro detailní práci se smlouvami.', ic('shield', 24)],
       claims: ['Události parku', 'Všech ' + f.claims + ' událostí parku najdete v modulu Pojistné události s filtrem na tento park.', ic('alert', 24)],
@@ -361,7 +383,8 @@ export default function FleetPortal() {
         vehicles: fleetVehicles, vehicleCount: fleetVehicles.length, goVehiclesTab: () => setState({ fleetTab: 'vehicles' }),
         endedVehicles: fleetEnded, endedCount: fleetEnded.length,
         parkInsurers, insurersTotalF, insurersCount: parkInsurers.length,
-        isOverview: tab === 'overview', isVehicles: tab === 'vehicles', isInsurers: tab === 'insurers', isOther: !['overview', 'vehicles', 'insurers'].includes(tab),
+        riskRows, riskTotalF, riskCount: riskRows.length, activeCount: pv.length,
+        isOverview: tab === 'overview', isVehicles: tab === 'vehicles', isInsurers: tab === 'insurers', isInsurance: tab === 'insurance', isOther: !['overview', 'vehicles', 'insurers', 'insurance'].includes(tab),
         otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
       },
       fleetTabs,
