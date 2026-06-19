@@ -59,6 +59,7 @@ export default function FleetPortal() {
     rowMenu: null, toast: null,
     unsub: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026',
     costModal: null, costDone: false, costType: 'Servis a opravy', costDesc: '', costAmount: '', costDate: '19. 6. 2026', costFile: null,
+    noteModal: null, noteText: '', vehNotes: {},
     np: false, npData: { name: '', manager: '', insurer: 'Kooperativa', policy: '', start: '1. 7. 2026', vehicles: '' },
     newFleets: [],
     docCat: null, docOpen: {}, docPreview: null,
@@ -93,6 +94,7 @@ export default function FleetPortal() {
   const showToast = (msg) => { if (ttRef.current) clearTimeout(ttRef.current); setState({ toast: msg }); ttRef.current = setTimeout(() => setState({ toast: null }), 3800) }
   const openUnsub = (v) => setState({ rowMenu: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026', unsub: { plate: v.plate, brand: v.brand, model: v.model, vin: v.vin, fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), renewal: v.renewal } })
   const openCostModal = (v) => setState({ costModal: { plate: v.plate, brand: v.brand, model: v.model }, costDone: false, costType: 'Servis a opravy', costDesc: '', costAmount: '', costDate: '19. 6. 2026', costFile: null })
+  const openNoteModal = (v) => setState({ noteModal: { vid: v.id, plate: v.plate, brand: v.brand, model: v.model }, noteText: '' })
   const buildClaimRow = (c) => {
     const cm = claimStatusMeta[c.status]
     const v = vehiclesData.find((x) => x.id === c.vId) || {}
@@ -267,6 +269,18 @@ export default function FleetPortal() {
       pickCostFile: (e) => { const f = e.target.files && e.target.files[0]; if (f) setState({ costFile: f.name }) },
       submitCost: () => setState({ costDone: true }),
       costTypes: ['Servis a opravy', 'Dálniční známka', 'Pneumatiky / přezutí', 'STK a emise', 'Palivo', 'Mytí a péče o vůz', 'Parkování', 'Mýtné (zahraničí)', 'Pokuta', 'Náhradní vozidlo', 'Leasing / splátka', 'Ostatní'],
+      noteModal: state.noteModal, noteText: state.noteText, currentUser: { name: 'Martin Kovář', initials: 'MK', role: 'Fleet Manager · Louda Auto' },
+      closeNoteModal: () => setState({ noteModal: null, noteText: '' }),
+      setNoteText: (e) => setState({ noteText: e.target.value }),
+      submitNote: () => setState((s) => {
+        const txt = (s.noteText || '').trim()
+        if (!txt || !s.noteModal) return {}
+        const vid = s.noteModal.vid
+        const now = new Date()
+        const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+        const note = { text: txt, author: 'Martin Kovář', initials: 'MK', date: '19. 6. 2026', time }
+        return { vehNotes: { ...s.vehNotes, [vid]: [note, ...(s.vehNotes[vid] || [])] }, noteModal: null, noteText: '' }
+      }),
       goFleets: () => navigate('fleets'),
       openClaimWizard: () => setState({ claimWizard: true, claimStep: 1, claimData: {} }),
       av: state.av, openAddVehicle: () => setState({ av: true, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avFleet: state.fleetId }),
@@ -566,6 +580,13 @@ export default function FleetPortal() {
       { name: `Servisní kniha ${plateNo}.pdf`, type: 'Servisní historie', meta: 'poslední servis 12. 3. 2026', size: '156 kB', icon: ic('wrench', 17), bg: '#F1F1F3', color: 'var(--ink2)', preview: prev, download: dl, openPreview: open({ kind: 'vehdoc', name: `Servisní kniha ${plateNo}.pdf`, type: 'Servisní historie', size: '156 kB', title: 'Servisní kniha vozidla', issuer: 'Louda Auto a.s. — autorizovaný servis', plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, accent: 'var(--ink2)', rows: [['Poslední servis', '12. 3. 2026'], ['Stav tachometru', v.mileage], ['Provedené úkony', 'Výměna oleje a filtrů'], ['Příští servis', 'za 15 000 km'], ['Záruka', 'do ' + (v.year + 5)], ['Servisní partner', 'Louda Auto a.s.']] }) },
       { name: `Leasingová smlouva ${plateNo}.pdf`, type: 'Financování', meta: 'operativní leasing', size: '198 kB', icon: ic('banknote', 17), bg: 'var(--blue-soft)', color: 'var(--blue)', preview: prev, download: dl, openPreview: open({ kind: 'vehdoc', name: `Leasingová smlouva ${plateNo}.pdf`, type: 'Financování', size: '198 kB', title: 'Smlouva o operativním leasingu', issuer: 'ČSOB Leasing, a.s.', plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, accent: 'var(--blue)', rows: [['Číslo smlouvy', 'LE-' + plateNo], ['Typ financování', 'Operativní leasing'], ['Měsíční splátka', '12 900 Kč'], ['Doba trvání', '48 měsíců'], ['Konec leasingu', '31. 3. 2028'], ['Účetní hodnota', v.value]] }) },
     ]
+    const mgr = fleetsData.find((f) => f.id === v.fleet).manager
+    const mgrInit = mgr.replace(/\b\wng?\.\s*/gi, '').trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+    const seedNotes = [
+      { text: `Vozidlo předáno řidiči ${v.driver} — plná nádrž, 2 ks klíčů, čistý interiér, bez závad.`, author: mgr, initials: mgrInit || 'FM', date: '18. 11. 2025', time: '09:24' },
+      { text: 'Při přebírce zaevidován drobný odřený zadní nárazník — bez nároku na pojistné plnění.', author: 'Martin Kovář', initials: 'MK', date: '3. 4. ' + v.year, time: '14:10' },
+    ]
+    const notes = [...(state.vehNotes[v.id] || []), ...seedNotes]
     const tabsDef = [['overview', 'Přehled'], ['insurance', 'Pojištění'], ['claims', 'Škody'], ['documents', 'Dokumenty'], ['timeline', 'Timeline'], ['costs', 'Náklady'], ['notes', 'Poznámky']]
     const vehicleTabs = tabsDef.map(([id, label]) => { const on = tab === id; return { label, onClick: () => setState({ vehicleTab: id }), style: `padding:10px 14px;font-size:13.5px;font-weight:600;cursor:pointer;color:${on ? 'var(--blue-ink)' : 'var(--ink3)'};border-bottom:2px solid ${on ? 'var(--blue)' : 'transparent'};margin-bottom:-1px` } })
     const otherMap = {
@@ -577,7 +598,7 @@ export default function FleetPortal() {
       vehicleTabs,
       vd: {
         brand: v.brand, model: v.model, plate: v.plate, driver: v.driver, fleetName: fleetName(v.fleet),
-        statusLabel: m.label, chipStyle: statusChip(v.status), facts, actions, specs, assign, products, productsExport, productsTotalF: czk(productsTotal), claims, timeline, vehicleDocs,
+        statusLabel: m.label, chipStyle: statusChip(v.status), facts, actions, specs, assign, products, productsExport, productsTotalF: czk(productsTotal), claims, timeline, vehicleDocs, notes, openNoteModal: () => openNoteModal(v),
         premiumF: czk(v.premium), productCount: products.filter((p) => p.status !== 'nocasco').length, renewal: v.renewal,
         isOverview: tab === 'overview', isInsurance: tab === 'insurance', isClaims: tab === 'claims', isTimeline: tab === 'timeline',
         isNotes: tab === 'notes', isCosts: tab === 'costs', openCostModal: () => openCostModal(v),

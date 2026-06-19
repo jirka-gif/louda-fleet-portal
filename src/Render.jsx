@@ -163,6 +163,7 @@ export default function Render({ vm }) {
       {vm.docPreview && <DocPreviewModal vm={vm} />}
       {vm.unsub && <UnsubscribeModal vm={vm} />}
       {vm.costModal && <CostModal vm={vm} />}
+      {vm.noteModal && <NoteModal vm={vm} />}
     </div>
   )
 }
@@ -298,6 +299,40 @@ function CostModal({ vm }) {
               <div onClick={vm.submitCost} style={S('height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--star);cursor:pointer')}>{ic('plus', 16)} Přidat náklad</div>
             </>
           )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ PŘIDAT POZNÁMKU ============================ */
+function NoteModal({ vm }) {
+  const c = vm.noteModal
+  const u = vm.currentUser
+  const canSave = (vm.noteText || '').trim().length > 0
+  return (
+    <div onClick={vm.closeNoteModal} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.4);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:520px;max-width:96vw;max-height:90vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--star-soft);color:var(--star);display:flex;align-items:center;justify-content:center')}>{ic('doc2', 18)}</div>
+          <div style={{ flex: 1 }}><div style={S('font-size:16px;font-weight:700')}>Přidat poznámku</div><div style={S('font-size:12.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{c.plate} · {c.brand} {c.model}</div></div>
+          <span onClick={vm.closeNoteModal} style={S('color:var(--ink3);cursor:pointer;display:flex')}>{ic('close', 17)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;padding:22px')}>
+          <div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Text poznámky</div>
+          <textarea value={vm.noteText} onChange={vm.setNoteText} autoFocus placeholder="Např. zákazník nahlásil tažení vozu doprava, doporučena geometrie…" rows={5} style={S('width:100%;border:1px solid var(--border2);border-radius:9px;padding:11px 12px;font-size:13.5px;font-family:inherit;outline:none;resize:vertical;line-height:1.55')} />
+          <div style={S('display:flex;align-items:center;gap:11px;margin-top:16px;padding:12px 14px;background:#FBFBFC;border:1px solid var(--border);border-radius:11px')}>
+            <div style={S('width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3A3A42,#18181B);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0')}>{u.initials}</div>
+            <div style={{ flex: 1 }}><div style={S('font-size:13px;font-weight:700')}>{u.name}</div><div style={S('font-size:11.5px;color:var(--ink3)')}>{u.role}</div></div>
+            <div style={S('text-align:right')}><div style={S('font-size:11px;color:var(--ink3)')}>Vloženo</div><div style={S('font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums')}>19. 6. 2026</div></div>
+          </div>
+          <div style={S('display:flex;align-items:flex-start;gap:8px;margin-top:11px;font-size:12px;color:var(--ink3)')}><span style={S('display:flex;flex-shrink:0;margin-top:1px')}>{ic('info', 14)}</span><span>U každé poznámky se ukládá, kdo ji vložil a kdy. Poznámky jsou interní a vidí je pouze správa vozového parku.</span></div>
+        </div>
+
+        <div style={S('display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border)')}>
+          <span onClick={vm.closeNoteModal} style={S('height:40px;padding:0 18px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer')}>Zrušit</span>
+          <div onClick={canSave ? vm.submitNote : undefined} style={S(`height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--star);cursor:${canSave ? 'pointer' : 'not-allowed'};opacity:${canSave ? 1 : .5}`)}>{ic('check', 16)} Uložit poznámku</div>
         </div>
       </div>
     </div>
@@ -1512,8 +1547,22 @@ function VehicleDetail({ vm }) {
       )}
 
       {vd.isNotes && (
-        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:48px;text-align:center')}>
-          <Hov as="span" base="display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 20px;background:var(--star);color:#fff;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer" hover="filter:brightness(.95)">{ic('plus', 16)} Přidat poznámku</Hov>
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+          <div style={S('display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)')}>
+            <div style={S('font-size:15px;font-weight:700')}>Poznámky <span style={S('font-size:12.5px;font-weight:600;color:var(--ink3)')}>· {vd.notes.length}</span></div>
+            <Hov onClick={vd.openNoteModal} as="span" base="display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 15px;background:var(--star);color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer" hover="filter:brightness(.95)">{ic('plus', 15)} Přidat poznámku</Hov>
+          </div>
+          {vd.notes.length === 0 ? (
+            <div style={S('padding:40px 18px;text-align:center;font-size:13px;color:var(--ink3)')}>Zatím žádné poznámky k tomuto vozidlu.</div>
+          ) : vd.notes.map((n, i) => (
+            <div key={i} style={S('display:flex;gap:13px;padding:15px 18px;border-bottom:1px solid var(--border)')}>
+              <div style={S('width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3A3A42,#18181B);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0')}>{n.initials}</div>
+              <div style={S('flex:1;min-width:0')}>
+                <div style={S('display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:3px')}><span style={S('font-size:13px;font-weight:700')}>{n.author}</span><span style={S('font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{n.date} · {n.time}</span></div>
+                <div style={S('font-size:13.5px;line-height:1.55;color:var(--ink2)')}>{n.text}</div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
