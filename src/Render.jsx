@@ -1008,7 +1008,7 @@ function Fleets({ vm }) {
       ) : (
       <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px')}>
         {vm.fleetCards.map((f, i) => (
-          <Hov key={i} onClick={f.onClick} base="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;transition:box-shadow .15s,border-color .15s" hover="border-color:#D4D4D8;box-shadow:0 8px 24px rgba(0,0,0,.06)">
+          <Hov key={i} onClick={f.onClick} base="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;transition:box-shadow .15s,border-color .15s" hover="border:1px solid #D4D4D8;box-shadow:0 8px 24px rgba(0,0,0,.06)">
             <div style={S('display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px')}>
               <div style={S('display:flex;align-items:center;gap:12px')}>
                 <div style={S('width:44px;height:44px;border-radius:11px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('fleets', 22)}</div>
@@ -1418,7 +1418,7 @@ function VehicleDetail({ vm }) {
             </div>
             <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:9px')}>
               {vd.actions.map((a, i) => (
-                <Hov key={i} base="display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 6px;border:1px solid var(--border);border-radius:11px;cursor:pointer;text-align:center" hover="border-color:#D4D4D8;background:#FAFAFA">
+                <Hov key={i} base="display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 6px;border:1px solid var(--border);border-radius:11px;cursor:pointer;text-align:center;transition:border-color .15s ease,background .15s ease" hover="border:1px solid var(--blue);background:#FAFBFF">
                   <span style={{ color: a.color, display: 'flex' }}>{a.icon}</span>
                   <span style={S('font-size:11.5px;font-weight:600;line-height:1.2;color:var(--ink2)')}>{a.label}</span>
                 </Hov>
