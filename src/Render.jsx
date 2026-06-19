@@ -134,6 +134,79 @@ export default function Render({ vm }) {
       {vm.av && <AddVehicleWizard vm={vm} />}
       {vm.np && <NewFleetModal vm={vm} />}
       {vm.docPreview && <DocPreviewModal vm={vm} />}
+      {vm.unsub && <UnsubscribeModal vm={vm} />}
+    </div>
+  )
+}
+
+/* ============================ ODHLÁŠENÍ Z POJIŠTĚNÍ ============================ */
+function UnsubscribeModal({ vm }) {
+  const u = vm.unsub
+  const ap = vm.unsubApprover
+  return (
+    <div onClick={vm.closeUnsub} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.4);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:560px;max-width:96vw;max-height:90vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--star-soft);color:var(--star);display:flex;align-items:center;justify-content:center')}>{ic('logout', 18)}</div>
+          <div style={{ flex: 1 }}><div style={S('font-size:16px;font-weight:700')}>Odhlášení vozidla z pojištění</div><div style={S('font-size:12.5px;color:var(--ink3)')}>{vm.unsubDone ? 'Hotovo' : 'Rekapitulace a odeslání ke schválení'}</div></div>
+          <span onClick={vm.closeUnsub} style={S('color:var(--ink3);cursor:pointer;display:flex')}>{ic('close', 17)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;padding:22px')}>
+          {vm.unsubDone ? (
+            <div style={S('text-align:center;padding:24px 0')}>
+              <div style={S('width:64px;height:64px;border-radius:50%;background:var(--amber-soft);color:var(--amber);display:flex;align-items:center;justify-content:center;margin:0 auto 16px')}>{ic('clock', 30, 2.2)}</div>
+              <div style={S('font-size:19px;font-weight:800')}>Žádost odeslána ke schválení</div>
+              <div style={S('font-size:13.5px;color:var(--ink3);margin-top:6px;max-width:400px;margin-left:auto;margin-right:auto')}>Odhlášení vozidla <strong style={S('color:var(--ink)')}>{u.plate}</strong> z pojištění ({u.insurer}) čeká na schválení — <strong style={S('color:var(--ink)')}>{ap.name}</strong>. Po schválení vám přijde potvrzení a vozidlo bude odhlášeno k {vm.unsubDate}.</div>
+            </div>
+          ) : (
+            <>
+              {/* rekapitulace — co a odkud */}
+              <div style={S('font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:10px')}>Rekapitulace</div>
+              <div style={S('border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:18px')}>
+                <div style={S('display:flex;align-items:center;gap:13px;padding:14px 16px;background:#FBFBFC;border-bottom:1px solid var(--border)')}>
+                  <div style={S('width:42px;height:34px;border-radius:7px;background:#F1F1F3;color:var(--ink3);display:flex;align-items:center;justify-content:center;flex-shrink:0')}>{ic('car', 18)}</div>
+                  <div style={{ flex: 1 }}><div style={S('font-size:14px;font-weight:700')}>{u.brand} {u.model}</div><div style={S('font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{u.plate} · VIN {u.vin}</div></div>
+                </div>
+                {[['Vozový park', u.fleetName], ['Pojišťovna', u.insurer], ['Roční pojistné', u.premiumF], ['Konec krytí (povinné ručení)', u.renewal]].map((r, i) => (
+                  <div key={i} style={S(`display:flex;justify-content:space-between;gap:14px;padding:11px 16px;font-size:13px;${i < 3 ? 'border-bottom:1px solid var(--border);' : ''}`)}><span style={S('color:var(--ink3)')}>{r[0]}</span><span style={S('font-weight:600;text-align:right')}>{r[1]}</span></div>
+                ))}
+              </div>
+
+              <div style={S('display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px')}>
+                <div><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Důvod odhlášení</div>
+                  <select value={vm.unsubReason} onChange={vm.setUnsubReason} style={S('width:100%;height:42px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none;background:#fff;cursor:pointer')}>
+                    {vm.unsubReasons.map((o, i) => <option key={i} value={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Datum odhlášení</div>
+                  <input value={vm.unsubDate} onChange={vm.setUnsubDate} style={S('width:100%;height:42px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none')} />
+                </div>
+              </div>
+
+              {/* schvalovatel */}
+              <div style={S('font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:10px')}>Schválení nadřízeným</div>
+              <div style={S('display:flex;align-items:center;gap:13px;padding:13px 15px;border:1px solid var(--border);border-radius:12px;background:var(--blue-soft)')}>
+                <div style={S('width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#2563DB,#1A47A3);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0')}>{ap.initials}</div>
+                <div style={{ flex: 1 }}><div style={S('font-size:13.5px;font-weight:700')}>{ap.name}</div><div style={S('font-size:12px;color:var(--ink2)')}>{ap.role}</div></div>
+                <span style={S('font-size:11px;font-weight:700;color:var(--amber);background:#fff;border:1px solid var(--amber-soft);padding:4px 10px;border-radius:20px;white-space:nowrap')}>Vyžaduje schválení</span>
+              </div>
+              <div style={S('display:flex;align-items:flex-start;gap:9px;margin-top:12px;font-size:12px;color:var(--ink3)')}><span style={S('display:flex;flex-shrink:0;margin-top:1px')}>{ic('info', 15)}</span><span>Odhlášení je nevratné. Po odeslání jej schvaluje nadřízený pracovník; teprve po schválení makléř zruší krytí u pojišťovny.</span></div>
+            </>
+          )}
+        </div>
+
+        <div style={S('display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border)')}>
+          {vm.unsubDone ? (
+            <div onClick={vm.closeUnsub} style={S('height:40px;padding:0 22px;border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:#fff;background:var(--blue);cursor:pointer')}>Zavřít</div>
+          ) : (
+            <>
+              <span onClick={vm.closeUnsub} style={S('height:40px;padding:0 18px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer')}>Zrušit</span>
+              <div onClick={vm.submitUnsub} style={S('height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--star);cursor:pointer')}>{ic('logout', 16)} Odeslat ke schválení</div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -28,6 +28,7 @@ export default function FleetPortal() {
     search: false, notif: false, ai: false, companyMenu: false, sidebar: false,
     claimWizard: false, claimStep: 1, claimData: {},
     rowMenu: null, toast: null,
+    unsub: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026',
     np: false, npData: { name: '', manager: '', insurer: 'Kooperativa', policy: '', start: '1. 7. 2026', vehicles: '' },
     newFleets: [],
     docCat: null, docOpen: {}, docPreview: null,
@@ -59,6 +60,7 @@ export default function FleetPortal() {
   const closeSearch = () => setState({ search: false })
   const stop = (e) => e.stopPropagation()
   const showToast = (msg) => { if (ttRef.current) clearTimeout(ttRef.current); setState({ toast: msg }); ttRef.current = setTimeout(() => setState({ toast: null }), 3800) }
+  const openUnsub = (v) => setState({ rowMenu: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026', unsub: { plate: v.plate, brand: v.brand, model: v.model, vin: v.vin, fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), renewal: v.renewal } })
   const setVf = (k, v) => setState((s) => ({ vf: { ...s.vf, [k]: v } }))
   const toggleSel = (id) => setState((s) => { const n = { ...s.selected }; if (n[id]) delete n[id]; else n[id] = true; return { selected: n } })
 
@@ -201,6 +203,13 @@ export default function FleetPortal() {
       openBonus: (id) => navigate('bonifikace-detail', { fleetId: id }), goBonifikace: () => navigate('bonifikace'),
       claimWizard: state.claimWizard, closeClaimWizard: () => setState({ claimWizard: false }),
       toast: state.toast, rowMenuOpen: state.rowMenu !== null, closeRowMenu: () => setState({ rowMenu: null }),
+      unsub: state.unsub, unsubDone: state.unsubDone, unsubReason: state.unsubReason, unsubDate: state.unsubDate,
+      closeUnsub: () => setState({ unsub: null }),
+      setUnsubReason: (e) => setState({ unsubReason: e.target.value }),
+      setUnsubDate: (e) => setState({ unsubDate: e.target.value }),
+      submitUnsub: () => setState({ unsubDone: true }),
+      unsubReasons: ['Prodej vozidla', 'Vyřazení z provozu', 'Totální škoda', 'Ukončení leasingu / úvěru', 'Převod na jiného provozovatele', 'Jiný důvod'],
+      unsubApprover: { name: 'Ing. Tomáš Bartoš', role: 'Vedoucí správy vozového parku · Louda Auto a.s.', initials: 'TB' },
       goFleets: () => navigate('fleets'),
       openClaimWizard: () => setState({ claimWizard: true, claimStep: 1, claimData: {} }),
       av: state.av, openAddVehicle: () => setState({ av: true, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avFleet: state.fleetId }),
@@ -315,7 +324,7 @@ export default function FleetPortal() {
         toggleMenu: (e) => { e.stopPropagation(); setState((s) => ({ rowMenu: s.rowMenu === v.id ? null : v.id })) },
         changeCover: (e) => { e.stopPropagation(); setState({ rowMenu: null }); openVehicle(v.id); setState({ vehicleTab: 'insurance' }) },
         reportClaim: (e) => { e.stopPropagation(); setState({ rowMenu: null, claimWizard: true, claimStep: 1, claimData: { vehicleId: v.id } }) },
-        unsubscribe: (e) => { e.stopPropagation(); setState({ rowMenu: null }); showToast(`${v.brand} ${v.model} (${v.plate}) — odeslána žádost o odhlášení z pojištění.`) },
+        unsubscribe: (e) => { e.stopPropagation(); openUnsub(v) },
       }
     })
     const otherMap = {
@@ -378,7 +387,7 @@ export default function FleetPortal() {
         toggleMenu: (e) => { e.stopPropagation(); setState((s) => ({ rowMenu: s.rowMenu === v.id ? null : v.id })) },
         changeCover: (e) => { e.stopPropagation(); setState({ rowMenu: null }); openVehicle(v.id); setState({ vehicleTab: 'insurance' }) },
         reportClaim: (e) => { e.stopPropagation(); setState({ rowMenu: null, claimWizard: true, claimStep: 1, claimData: { vehicleId: v.id } }) },
-        unsubscribe: (e) => { e.stopPropagation(); setState({ rowMenu: null }); showToast(`${v.brand} ${v.model} (${v.plate}) — odeslána žádost o odhlášení z pojištění.`) },
+        unsubscribe: (e) => { e.stopPropagation(); openUnsub(v) },
       }
     })
     return { vFilters, vfQuery: vf.q, onVfQuery: (e) => setVf('q', e.target.value), vehicleRows, vSelCount: Object.keys(sel).length, clearSel: () => setState({ selected: {} }) }
