@@ -1838,6 +1838,7 @@ function Claims({ vm }) {
 
 /* ============================ DOCUMENTS ============================ */
 function Documents({ vm }) {
+  const cols = vm.vp.isMobile || vm.vp.isTablet ? 2 : 4
   return (
     <div>
       <div style={S('display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px')}>
@@ -1846,9 +1847,13 @@ function Documents({ vm }) {
         <div style={S('display:flex;align-items:center;gap:7px;height:38px;padding:0 13px;border:1px solid var(--border);background:#fff;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer')}>{ic('doc2', 16)} Hromadné stažení</div>
         <div style={S('display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;background:var(--blue);color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer')}>{ic('plus', 15)} Nahrát</div>
       </div>
-      <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px')}>
+      <div style={S(`display:grid;grid-template-columns:repeat(${cols},1fr);gap:12px;margin-bottom:18px`)}>
         {vm.docFolders.map((f, i) => (
-          <Hov key={i} onClick={f.onClick} base="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer" hover="border-color:#D4D4D8;background:#FAFAFA"><div style={S('display:flex;align-items:center;justify-content:space-between')}><div style={S(`width:38px;height:38px;border-radius:10px;background:${f.bg};color:${f.color};display:flex;align-items:center;justify-content:center`)}>{f.icon}</div><span style={S('color:var(--ink3);display:flex')}>{ic('arrow', 16)}</span></div><div style={S('font-size:14px;font-weight:700;margin-top:12px')}>{f.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{f.count} souborů</div></Hov>
+          <Hov key={i} onClick={f.onClick} base="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 15px;cursor:pointer" hover="border-color:#D4D4D8;background:#FAFAFA">
+            <div style={S(`width:42px;height:42px;border-radius:11px;background:${f.bg};color:${f.color};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{f.icon}</div>
+            <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap')}>{f.name}</div><div style={S('font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{f.count} souborů</div></div>
+            <span style={S('color:var(--ink3);display:flex;flex-shrink:0')}>{ic('arrow', 16)}</span>
+          </Hov>
         ))}
       </div>
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
