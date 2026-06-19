@@ -139,44 +139,112 @@ export default function Render({ vm }) {
 }
 
 /* ============================ GREEN CARD PREVIEW ============================ */
+// Faithful recreation of the Czech green card (ČKP standard form, black text on
+// white paper). All personal data is anonymised / fictional.
+const GC_COUNTRIES = ['A', 'B', 'BG', 'CY', 'CZ', 'D', 'DK', 'E', 'EST', 'F', 'FIN', 'GB', 'H', 'HR', 'I', 'IRL', 'IS', 'L', 'LT', 'LV', 'M', 'N', 'NL', 'P', 'PL', 'RO', 'S', 'SK', 'SLO', 'CH', 'AL', 'AND', 'AZ', 'BIH', 'BY', 'IR', 'MA', 'MD', 'MK', 'MNE', 'RUS', 'SRB', 'TN', 'TR', 'UA', 'UK']
+
 function GreenCardPreview({ vm }) {
   const d = vm.docPreview
-  const countries = ['CZ', 'SK', 'D', 'A', 'PL', 'H', 'I', 'F', 'E', 'CH', 'SLO', 'HR']
+  const dmy = (s) => { const p = (s || '').replace(/\s/g, '').split('.').filter(Boolean); return { d: (p[0] || '').padStart(2, '0'), m: (p[1] || '').padStart(2, '0'), y: p[2] || '' } }
+  const vf = dmy(d.validFrom), vt = dmy(d.validTo)
+  const gcNum = '5685' + (d.plate.replace(/\D/g, '') + '000000').slice(0, 6)
+
+  const LBL = 'font-size:8.5px;font-weight:700;color:#3F3F46;line-height:1.25'
+  const SUB = 'font-size:8px;font-style:italic;color:#71717A;line-height:1.2'
+  const VAL = 'font-size:12.5px;font-weight:700;color:#111;margin-top:4px;font-variant-numeric:tabular-nums'
+  const CELL = 'border:1px solid #B8B8BE;padding:8px 10px;background:#fff'
+
+  const DateBox = ({ label, dd }) => (
+    <div style={S('display:flex;align-items:center;gap:8px')}>
+      <div style={S('width:34px;font-size:9px;font-weight:700;color:#3F3F46')}>{label}</div>
+      {[['Den', dd.d], ['Měsíc', dd.m], ['Rok', dd.y]].map((x, i) => (
+        <div key={i} style={S('text-align:center')}>
+          <div style={S('font-size:7.5px;color:#71717A')}>{x[0]}</div>
+          <div style={S('border:1px solid #B8B8BE;border-radius:2px;padding:2px 6px;font-size:12px;font-weight:700;color:#111;font-variant-numeric:tabular-nums;min-width:30px')}>{x[1]}</div>
+        </div>
+      ))}
+    </div>
+  )
+
   return (
     <div onClick={vm.closeDocPreview} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
-      <div onClick={(e) => e.stopPropagation()} style={S('width:680px;max-width:96vw;max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:700px;max-width:96vw;max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
         <div style={S('display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)')}>
-          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center')}>{ic('doc2', 18)}</div>
+          <InsurerLogo name={d.insurer} size={36} />
           <div style={{ flex: 1, minWidth: 0 }}><div style={S('font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{d.type} · {d.size}</div></div>
           <Hov as="span" base="display:flex;align-items:center;gap:6px;height:34px;padding:0 13px;border:1px solid var(--border2);border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('arrow', 15)} Stáhnout</Hov>
           <span onClick={vm.closeDocPreview} style={S('color:var(--ink3);cursor:pointer;display:flex;margin-left:4px')}>{ic('close', 18)}</span>
         </div>
 
-        <div style={S('flex:1;overflow-y:auto;background:#F1F1F3;padding:24px')}>
-          <div style={S('max-width:540px;margin:0 auto;background:#F1FBF4;border:2px solid #16A34A;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.1);padding:26px 28px')}>
-            <div style={S('display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px')}>
+        <div style={S('flex:1;overflow-y:auto;background:#E9E9EC;padding:24px')}>
+          <div style={S('max-width:600px;margin:0 auto;background:#fff;border:1px solid #B8B8BE;box-shadow:0 6px 24px rgba(0,0,0,.12);padding:24px 26px;color:#111')}>
+
+            {/* heading */}
+            <div style={S('display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:12px')}>
               <div>
-                <div style={S('font-size:10px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:.5px')}>Mezinárodní karta automobilového pojištění</div>
-                <div style={S('font-size:19px;font-weight:800;letter-spacing:-.3px;color:#166534;margin-top:2px')}>Zelená karta</div>
+                <div style={S('font-size:13px;font-weight:800;letter-spacing:.2px')}>1. MEZINÁRODNÍ AUTOMOBILOVÁ POJIŠŤOVACÍ KARTA</div>
+                <div style={S(SUB)}>International Motor Insurance Card · Carte internationale d’assurance automobile</div>
+                <div style={S('font-size:9px;color:#3F3F46;margin-top:4px')}>2. Vydaná z pověření České kanceláře pojistitelů, Praha</div>
               </div>
-              <InsurerLogo name={d.insurer} size={42} />
+              <div style={S('font-size:9px;font-weight:800;border:1px solid #111;padding:3px 8px;white-space:nowrap')}>ORIGINÁL</div>
             </div>
 
-            <div style={S('display:flex;gap:10px;margin-bottom:16px')}>
-              <div style={S('flex:1;background:#fff;border:1px solid #BBE6C9;border-radius:8px;padding:10px 12px')}><div style={S('font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px')}>Platí od</div><div style={S('font-size:14px;font-weight:700;color:#166534;font-variant-numeric:tabular-nums')}>{d.validFrom}</div></div>
-              <div style={S('flex:1;background:#fff;border:1px solid #BBE6C9;border-radius:8px;padding:10px 12px')}><div style={S('font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px')}>Platí do</div><div style={S('font-size:14px;font-weight:700;color:#166534;font-variant-numeric:tabular-nums')}>{d.validTo}</div></div>
+            {/* row: policyholder + number/validity */}
+            <div style={S('display:grid;grid-template-columns:1fr 1fr')}>
+              <div style={S(CELL)}>
+                <div style={S(LBL)}>9. Jméno a adresa pojistníka (nebo provozovatele vozidla)</div>
+                <div style={S(SUB)}>Name and Address of the Policyholder (or User of the Vehicle)</div>
+                <div style={S(VAL)}>Louda Auto a.s.</div>
+                <div style={S('font-size:11.5px;color:#27272A;margin-top:1px')}>Jankovcova 1827/41, 170 00 Praha 7, Česká republika</div>
+              </div>
+              <div style={S(CELL + ';border-left:none')}>
+                <div style={S(LBL)}>4. Kód země / Kód pojistitele / Číslo</div>
+                <div style={S(SUB)}>Country Code / Insurer’s Code / Number</div>
+                <div style={S(VAL)}>CZ / 0001 / {gcNum}</div>
+                <div style={S('border-top:1px solid #D4D4D8;margin-top:8px;padding-top:8px')}>
+                  <div style={S(LBL)}>3. PLATNÁ / VALID</div>
+                  <div style={S('display:flex;flex-direction:column;gap:6px;margin-top:6px')}>
+                    <DateBox label="OD" dd={vf} />
+                    <DateBox label="DO" dd={vt} />
+                  </div>
+                  <div style={S('font-size:8px;font-style:italic;color:#71717A;margin-top:4px')}>(Obě data včetně / Both Dates inclusive)</div>
+                </div>
+              </div>
             </div>
 
-            <div style={S('background:#fff;border:1px solid #BBE6C9;border-radius:8px;overflow:hidden;margin-bottom:16px')}>
-              {[['Registrační značka (SPZ)', d.plate], ['VIN', d.vin], ['Vozidlo', `${d.brand} ${d.model}`], ['Pojistitel', d.insurer], ['Stát registrace', 'CZ — Česká republika']].map((r, i) => (
-                <div key={i} style={S(`display:flex;justify-content:space-between;gap:14px;padding:10px 14px;font-size:12.5px;${i < 4 ? 'border-bottom:1px solid #E3F3E9;' : ''}`)}><span style={S('color:var(--ink3)')}>{r[0]}</span><span style={S('font-weight:700;text-align:right;font-variant-numeric:tabular-nums')}>{r[1]}</span></div>
-              ))}
+            {/* row: vehicle + issuer */}
+            <div style={S('display:grid;grid-template-columns:1fr 1fr')}>
+              <div style={S(CELL + ';border-top:none')}>
+                <div style={S(LBL)}>5. Registrační značka (není-li, uvede se VIN nebo č. podvozku)</div>
+                <div style={S(SUB)}>Registration No. (or if none) Chassis or Engine No.</div>
+                <div style={S(VAL + ';font-size:15px;letter-spacing:.5px')}>{d.plate}</div>
+                <div style={S('display:flex;gap:18px;margin-top:10px')}>
+                  <div><div style={S(LBL)}>6. Druh vozidla</div><div style={S(SUB)}>Category</div><div style={S(VAL)}>A</div></div>
+                  <div style={S('flex:1')}><div style={S(LBL)}>7. Značka vozidla</div><div style={S(SUB)}>Make of Vehicle</div><div style={S(VAL)}>{d.brand} {d.model}</div></div>
+                </div>
+                <div style={S('border-top:1px solid #D4D4D8;margin-top:10px;padding-top:8px')}><div style={S(LBL)}>VIN</div><div style={S('font-size:11.5px;font-weight:700;color:#111;margin-top:2px;font-variant-numeric:tabular-nums')}>{d.vin}</div></div>
+              </div>
+              <div style={S(CELL + ';border-top:none;border-left:none')}>
+                <div style={S(LBL)}>10. Tato karta byla vydána / This Card has been issued by</div>
+                <div style={S(VAL)}>{d.insurer}</div>
+                <div style={S('font-size:11px;color:#27272A;margin-top:2px')}>Česká republika · tel.: +420 800 100 100</div>
+                <div style={S('border-top:1px solid #D4D4D8;margin-top:34px;padding-top:8px')}>
+                  <div style={S(LBL)}>11. Podpis za pojistitele / Signature of Insurer</div>
+                  <div style={S('font-style:italic;font-size:15px;color:#52525B;margin-top:8px;font-family:Georgia,serif')}>{d.insurer}</div>
+                </div>
+              </div>
             </div>
 
-            <div style={S('font-size:10px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px')}>Platí na území států</div>
-            <div style={S('display:flex;flex-wrap:wrap;gap:6px')}>
-              {countries.map((c, i) => <span key={i} style={S('font-size:11px;font-weight:700;color:#166534;background:#fff;border:1px solid #BBE6C9;border-radius:6px;padding:3px 9px;font-variant-numeric:tabular-nums')}>{c}</span>)}
+            {/* territorial validity */}
+            <div style={S(CELL + ';border-top:none')}>
+              <div style={S(LBL)}>8. ÚZEMNÍ PLATNOST / TERRITORIAL VALIDITY</div>
+              <div style={S('font-size:8px;color:#71717A;margin-top:2px;margin-bottom:8px')}>Karta není platná v zemích, jejichž rubrika je přeškrtnuta (www.cobx.org).</div>
+              <div style={S('display:flex;flex-wrap:wrap;gap:4px')}>
+                {GC_COUNTRIES.map((c, i) => <span key={i} style={S(`font-size:10.5px;font-weight:700;border:1px solid #B8B8BE;border-radius:2px;padding:3px 7px;min-width:26px;text-align:center;font-variant-numeric:tabular-nums;color:#111;${c === 'CZ' ? 'background:#111;color:#fff' : ''}`)}>{c}</span>)}
+              </div>
             </div>
+
+            <div style={S('font-size:8px;color:#71717A;margin-top:10px;line-height:1.4')}>V každé navštívené zemi ručí Kancelář této země za závazky pojistitele vztahující se k použití zmíněného vozidla, a to v souladu se zákony vztahujícími se k povinnému pojištění v této zemi.</div>
           </div>
         </div>
       </div>
