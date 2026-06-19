@@ -58,6 +58,7 @@ export default function FleetPortal() {
     claimWizard: false, claimStep: 1, claimData: {},
     rowMenu: null, toast: null,
     unsub: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026',
+    costModal: null, costDone: false, costType: 'Servis a opravy', costDesc: '', costAmount: '', costDate: '19. 6. 2026', costFile: null,
     np: false, npData: { name: '', manager: '', insurer: 'Kooperativa', policy: '', start: '1. 7. 2026', vehicles: '' },
     newFleets: [],
     docCat: null, docOpen: {}, docPreview: null,
@@ -91,6 +92,7 @@ export default function FleetPortal() {
   const stop = (e) => e.stopPropagation()
   const showToast = (msg) => { if (ttRef.current) clearTimeout(ttRef.current); setState({ toast: msg }); ttRef.current = setTimeout(() => setState({ toast: null }), 3800) }
   const openUnsub = (v) => setState({ rowMenu: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026', unsub: { plate: v.plate, brand: v.brand, model: v.model, vin: v.vin, fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), renewal: v.renewal } })
+  const openCostModal = (v) => setState({ costModal: { plate: v.plate, brand: v.brand, model: v.model }, costDone: false, costType: 'Servis a opravy', costDesc: '', costAmount: '', costDate: '19. 6. 2026', costFile: null })
   const buildClaimRow = (c) => {
     const cm = claimStatusMeta[c.status]
     const v = vehiclesData.find((x) => x.id === c.vId) || {}
@@ -256,6 +258,15 @@ export default function FleetPortal() {
       submitUnsub: () => setState({ unsubDone: true }),
       unsubReasons: ['Prodej vozidla', 'Vyřazení z provozu', 'Totální škoda', 'Ukončení leasingu / úvěru', 'Převod na jiného provozovatele', 'Jiný důvod'],
       unsubApprover: { name: 'Ing. Tomáš Bartoš', role: 'Vedoucí správy vozového parku · Louda Auto a.s.', initials: 'TB' },
+      costModal: state.costModal, costDone: state.costDone, costType: state.costType, costDesc: state.costDesc, costAmount: state.costAmount, costDate: state.costDate, costFile: state.costFile,
+      closeCostModal: () => setState({ costModal: null }),
+      setCostType: (e) => setState({ costType: e.target.value }),
+      setCostDesc: (e) => setState({ costDesc: e.target.value }),
+      setCostAmount: (e) => setState({ costAmount: e.target.value }),
+      setCostDate: (e) => setState({ costDate: e.target.value }),
+      pickCostFile: (e) => { const f = e.target.files && e.target.files[0]; if (f) setState({ costFile: f.name }) },
+      submitCost: () => setState({ costDone: true }),
+      costTypes: ['Servis a opravy', 'Dálniční známka', 'Pneumatiky / přezutí', 'STK a emise', 'Palivo', 'Mytí a péče o vůz', 'Parkování', 'Mýtné (zahraničí)', 'Pokuta', 'Náhradní vozidlo', 'Leasing / splátka', 'Ostatní'],
       goFleets: () => navigate('fleets'),
       openClaimWizard: () => setState({ claimWizard: true, claimStep: 1, claimData: {} }),
       av: state.av, openAddVehicle: () => setState({ av: true, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avFleet: state.fleetId }),
@@ -557,8 +568,8 @@ export default function FleetPortal() {
         statusLabel: m.label, chipStyle: statusChip(v.status), facts, actions, specs, assign, products, productsExport, productsTotalF: czk(productsTotal), claims, timeline,
         premiumF: czk(v.premium), productCount: products.filter((p) => p.status !== 'nocasco').length, renewal: v.renewal,
         isOverview: tab === 'overview', isInsurance: tab === 'insurance', isClaims: tab === 'claims', isTimeline: tab === 'timeline',
-        isNotes: tab === 'notes',
-        isOther: ['documents', 'costs'].includes(tab), otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
+        isNotes: tab === 'notes', isCosts: tab === 'costs', openCostModal: () => openCostModal(v),
+        isOther: tab === 'documents', otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
       },
     }
   }

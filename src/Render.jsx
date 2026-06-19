@@ -162,6 +162,7 @@ export default function Render({ vm }) {
       {vm.np && <NewFleetModal vm={vm} />}
       {vm.docPreview && <DocPreviewModal vm={vm} />}
       {vm.unsub && <UnsubscribeModal vm={vm} />}
+      {vm.costModal && <CostModal vm={vm} />}
     </div>
   )
 }
@@ -230,6 +231,71 @@ function UnsubscribeModal({ vm }) {
             <>
               <span onClick={vm.closeUnsub} style={S('height:40px;padding:0 18px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer')}>Zrušit</span>
               <div onClick={vm.submitUnsub} style={S('height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--star);cursor:pointer')}>{ic('logout', 16)} Odeslat ke schválení</div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ PŘIDAT NÁKLAD ============================ */
+function CostModal({ vm }) {
+  const c = vm.costModal
+  return (
+    <div onClick={vm.closeCostModal} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.4);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:540px;max-width:96vw;max-height:90vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center')}>{ic('banknote', 18)}</div>
+          <div style={{ flex: 1 }}><div style={S('font-size:16px;font-weight:700')}>{vm.costDone ? 'Náklad přidán' : 'Přidat náklad'}</div><div style={S('font-size:12.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{c.plate} · {c.brand} {c.model}</div></div>
+          <span onClick={vm.closeCostModal} style={S('color:var(--ink3);cursor:pointer;display:flex')}>{ic('close', 17)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;padding:22px')}>
+          {vm.costDone ? (
+            <div style={S('text-align:center;padding:20px 0')}>
+              <div style={S('width:64px;height:64px;border-radius:50%;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 16px')}>{ic('check2', 30, 2.2)}</div>
+              <div style={S('font-size:19px;font-weight:800')}>Náklad byl uložen</div>
+              <div style={S('font-size:13.5px;color:var(--ink3);margin-top:6px;max-width:380px;margin-left:auto;margin-right:auto')}><strong style={S('color:var(--ink)')}>{vm.costType}</strong>{vm.costAmount ? <> · {vm.costAmount} Kč</> : null} byl přidán k vozidlu {c.plate}{vm.costFile ? <> včetně přílohy <strong style={S('color:var(--ink)')}>{vm.costFile}</strong></> : null}.</div>
+            </div>
+          ) : (
+            <>
+              <div style={S('display:grid;grid-template-columns:1fr;gap:14px')}>
+                <div><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Druh nákladu</div>
+                  <select value={vm.costType} onChange={vm.setCostType} style={S('width:100%;height:42px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none;background:#fff;cursor:pointer')}>
+                    {vm.costTypes.map((o, i) => <option key={i} value={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div style={S('display:grid;grid-template-columns:1fr 1fr;gap:14px')}>
+                  <div><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Částka (Kč)</div>
+                    <input value={vm.costAmount} onChange={vm.setCostAmount} placeholder="0" inputMode="numeric" style={S('width:100%;height:42px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none;font-variant-numeric:tabular-nums')} />
+                  </div>
+                  <div><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Datum</div>
+                    <input value={vm.costDate} onChange={vm.setCostDate} style={S('width:100%;height:42px;border:1px solid var(--border2);border-radius:9px;padding:0 12px;font-size:13.5px;font-family:inherit;outline:none')} />
+                  </div>
+                </div>
+                <div><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Popis nákladu</div>
+                  <textarea value={vm.costDesc} onChange={vm.setCostDesc} placeholder="Např. výměna brzdových destiček a kotoučů, přední náprava…" rows={3} style={S('width:100%;border:1px solid var(--border2);border-radius:9px;padding:10px 12px;font-size:13.5px;font-family:inherit;outline:none;resize:vertical;line-height:1.5')} />
+                </div>
+                <div><div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px')}>Faktura / doklad</div>
+                  <label style={S(`display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px dashed ${vm.costFile ? 'var(--green)' : 'var(--border2)'};border-radius:11px;cursor:pointer;background:${vm.costFile ? 'var(--green-soft)' : '#FBFBFC'}`)}>
+                    <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={vm.pickCostFile} style={{ display: 'none' }} />
+                    <span style={S(`width:34px;height:34px;border-radius:9px;background:#fff;border:1px solid var(--border);color:${vm.costFile ? 'var(--green)' : 'var(--ink3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{ic(vm.costFile ? 'check2' : 'upload', 17)}</span>
+                    <div style={{ flex: 1 }}><div style={S('font-size:13px;font-weight:600')}>{vm.costFile || 'Připojit fakturu'}</div><div style={S('font-size:11.5px;color:var(--ink3)')}>{vm.costFile ? 'Soubor připraven k nahrání' : 'PDF, JPG nebo PNG · přetáhněte nebo klikněte'}</div></div>
+                  </label>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={S('display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border)')}>
+          {vm.costDone ? (
+            <div onClick={vm.closeCostModal} style={S('height:40px;padding:0 22px;border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:#fff;background:var(--blue);cursor:pointer')}>Hotovo</div>
+          ) : (
+            <>
+              <span onClick={vm.closeCostModal} style={S('height:40px;padding:0 18px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer')}>Zrušit</span>
+              <div onClick={vm.submitCost} style={S('height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--star);cursor:pointer')}>{ic('plus', 16)} Přidat náklad</div>
             </>
           )}
         </div>
@@ -1380,6 +1446,12 @@ function VehicleDetail({ vm }) {
       {vd.isNotes && (
         <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:48px;text-align:center')}>
           <Hov as="span" base="display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 20px;background:var(--star);color:#fff;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer" hover="filter:brightness(.95)">{ic('plus', 16)} Přidat poznámku</Hov>
+        </div>
+      )}
+
+      {vd.isCosts && (
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:48px;text-align:center')}>
+          <Hov onClick={vd.openCostModal} as="span" base="display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 20px;background:var(--star);color:#fff;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer" hover="filter:brightness(.95)">{ic('plus', 16)} Přidat náklad</Hov>
         </div>
       )}
 
