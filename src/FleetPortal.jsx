@@ -554,6 +554,18 @@ export default function FleetPortal() {
       { date: '18. 11. 2025', title: 'Změna řidiče', desc: 'Nový řidič ' + v.driver, icon: ic('user1', 16), bg: 'var(--blue-soft)', color: 'var(--blue)' },
       { date: '3. 4. ' + v.year, title: 'Vozidlo přidáno', desc: 'Zařazeno do parku ' + fleetName(v.fleet), icon: ic('plus', 16), bg: 'var(--blue-soft)', color: 'var(--blue)' },
     ]
+    const plateNo = v.plate.replace(/\s/g, '')
+    const prev = ic('search', 16), dl = ic('arrow', 16)
+    const open = (payload) => () => setState({ docPreview: payload })
+    const vehicleDocs = [
+      { name: `Pojistná smlouva ${plateNo}.pdf`, type: 'Smlouva', meta: `${v.insurer} · PR-${plateNo}`, size: '214 kB', icon: ic('shield', 17), bg: 'var(--star-soft)', color: 'var(--star)', preview: prev, download: dl, openPreview: open({ name: `Pojistná smlouva ${plateNo}.pdf`, type: 'Smlouva', size: '214 kB', insurer: v.insurer, policy: 'PR-' + plateNo, fleetName: fleetName(v.fleet), date: v.renewal }) },
+      { name: `Zelená karta ${plateNo}.pdf`, type: 'Zelená karta', meta: `${v.insurer} · platná do 31. 12. 2026`, size: '94 kB', icon: ic('doc2', 17), bg: 'var(--green-soft)', color: 'var(--green)', preview: prev, download: dl, openPreview: open({ kind: 'zk', name: `Zelená karta ${plateNo}.pdf`, type: 'Zelená karta', size: '94 kB', insurer: v.insurer, plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, validFrom: '1. 1. 2026', validTo: '31. 12. 2026' }) },
+      { name: `Technický průkaz ${plateNo}.pdf`, type: 'Osvědčení o registraci vozidla', meta: 'ORV část I · velký TP', size: '118 kB', icon: ic('car', 17), bg: 'var(--blue-soft)', color: 'var(--blue)', preview: prev, download: dl, openPreview: open({ kind: 'orv', name: `Technický průkaz ${plateNo}.pdf`, type: 'Osvědčení o registraci vozidla', size: '118 kB', plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, year: v.year, fuel: v.fuel }) },
+      { name: `STK a emise ${plateNo}.pdf`, type: 'Protokol STK', meta: 'platná do 5. 2. 2028', size: '88 kB', icon: ic('check2', 17), bg: 'var(--green-soft)', color: 'var(--green)', preview: prev, download: dl, openPreview: open({ kind: 'vehdoc', name: `STK a emise ${plateNo}.pdf`, type: 'Protokol STK', size: '88 kB', title: 'Protokol o technické prohlídce a měření emisí', issuer: 'Stanice technické kontroly', plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, accent: 'var(--green)', rows: [['Evidenční číslo', 'STK-' + plateNo], ['Datum prohlídky', '5. 2. 2026'], ['Platnost do', '5. 2. 2028'], ['Výsledek', 'Způsobilé k provozu'], ['Stav tachometru', v.mileage], ['Měření emisí', 'Vyhovuje']] }) },
+      { name: `Dálniční známka ${plateNo}.pdf`, type: 'Dálniční známka', meta: 'roční · ČR · 2026', size: '42 kB', icon: ic('calendar', 17), bg: 'var(--amber-soft)', color: 'var(--amber)', preview: prev, download: dl, openPreview: open({ kind: 'vehdoc', name: `Dálniční známka ${plateNo}.pdf`, type: 'Dálniční známka', size: '42 kB', title: 'Elektronická dálniční známka (e-známka)', issuer: 'Státní fond dopravní infrastruktury', plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, accent: 'var(--amber)', rows: [['Typ kupónu', 'Roční (12 měsíců)'], ['Platnost od', '1. 1. 2026'], ['Platnost do', '31. 1. 2027'], ['Země platnosti', 'Česká republika'], ['Cena', '2 440 Kč'], ['Stav', 'Aktivní']] }) },
+      { name: `Servisní kniha ${plateNo}.pdf`, type: 'Servisní historie', meta: 'poslední servis 12. 3. 2026', size: '156 kB', icon: ic('wrench', 17), bg: '#F1F1F3', color: 'var(--ink2)', preview: prev, download: dl, openPreview: open({ kind: 'vehdoc', name: `Servisní kniha ${plateNo}.pdf`, type: 'Servisní historie', size: '156 kB', title: 'Servisní kniha vozidla', issuer: 'Louda Auto a.s. — autorizovaný servis', plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, accent: 'var(--ink2)', rows: [['Poslední servis', '12. 3. 2026'], ['Stav tachometru', v.mileage], ['Provedené úkony', 'Výměna oleje a filtrů'], ['Příští servis', 'za 15 000 km'], ['Záruka', 'do ' + (v.year + 5)], ['Servisní partner', 'Louda Auto a.s.']] }) },
+      { name: `Leasingová smlouva ${plateNo}.pdf`, type: 'Financování', meta: 'operativní leasing', size: '198 kB', icon: ic('banknote', 17), bg: 'var(--blue-soft)', color: 'var(--blue)', preview: prev, download: dl, openPreview: open({ kind: 'vehdoc', name: `Leasingová smlouva ${plateNo}.pdf`, type: 'Financování', size: '198 kB', title: 'Smlouva o operativním leasingu', issuer: 'ČSOB Leasing, a.s.', plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, accent: 'var(--blue)', rows: [['Číslo smlouvy', 'LE-' + plateNo], ['Typ financování', 'Operativní leasing'], ['Měsíční splátka', '12 900 Kč'], ['Doba trvání', '48 měsíců'], ['Konec leasingu', '31. 3. 2028'], ['Účetní hodnota', v.value]] }) },
+    ]
     const tabsDef = [['overview', 'Přehled'], ['insurance', 'Pojištění'], ['claims', 'Škody'], ['documents', 'Dokumenty'], ['timeline', 'Timeline'], ['costs', 'Náklady'], ['notes', 'Poznámky']]
     const vehicleTabs = tabsDef.map(([id, label]) => { const on = tab === id; return { label, onClick: () => setState({ vehicleTab: id }), style: `padding:10px 14px;font-size:13.5px;font-weight:600;cursor:pointer;color:${on ? 'var(--blue-ink)' : 'var(--ink3)'};border-bottom:2px solid ${on ? 'var(--blue)' : 'transparent'};margin-bottom:-1px` } })
     const otherMap = {
@@ -565,11 +577,12 @@ export default function FleetPortal() {
       vehicleTabs,
       vd: {
         brand: v.brand, model: v.model, plate: v.plate, driver: v.driver, fleetName: fleetName(v.fleet),
-        statusLabel: m.label, chipStyle: statusChip(v.status), facts, actions, specs, assign, products, productsExport, productsTotalF: czk(productsTotal), claims, timeline,
+        statusLabel: m.label, chipStyle: statusChip(v.status), facts, actions, specs, assign, products, productsExport, productsTotalF: czk(productsTotal), claims, timeline, vehicleDocs,
         premiumF: czk(v.premium), productCount: products.filter((p) => p.status !== 'nocasco').length, renewal: v.renewal,
         isOverview: tab === 'overview', isInsurance: tab === 'insurance', isClaims: tab === 'claims', isTimeline: tab === 'timeline',
         isNotes: tab === 'notes', isCosts: tab === 'costs', openCostModal: () => openCostModal(v),
-        isOther: tab === 'documents', otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
+        isVehDocs: tab === 'documents',
+        isOther: false, otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
       },
     }
   }

@@ -304,6 +304,56 @@ function CostModal({ vm }) {
   )
 }
 
+/* ============================ DOKUMENT VOZIDLA PREVIEW ============================ */
+function VehicleDocPreview({ vm }) {
+  const d = vm.docPreview
+  const accent = d.accent || 'var(--ink2)'
+  const line = (w) => <div style={S(`height:9px;border-radius:4px;background:#ECECEE;width:${w}`)}></div>
+  return (
+    <div onClick={vm.closeDocPreview} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:760px;max-width:96vw;max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)')}>
+          <div style={S(`width:36px;height:36px;border-radius:10px;background:${accent};color:#fff;display:flex;align-items:center;justify-content:center`)}>{ic('doc2', 18)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}><div style={S('font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{d.type} · {d.size}</div></div>
+          <Hov as="span" base="display:flex;align-items:center;gap:6px;height:34px;padding:0 13px;border:1px solid var(--border2);border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('arrow', 15)} Stáhnout</Hov>
+          <span onClick={vm.closeDocPreview} style={S('color:var(--ink3);cursor:pointer;display:flex;margin-left:4px')}>{ic('close', 18)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;background:#F1F1F3;padding:24px')}>
+          <div style={S('max-width:600px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.08);padding:44px 48px;min-height:780px')}>
+            <div style={S(`display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid ${accent};padding-bottom:18px;margin-bottom:26px`)}>
+              <div>
+                <div style={S('font-size:16px;font-weight:800;letter-spacing:.2px')}>{d.issuer}</div>
+                <div style={S('font-size:11px;color:var(--ink3);margin-top:2px')}>Vystavitel dokumentu</div>
+              </div>
+              <div style={S('text-align:right;font-size:11px;color:var(--ink3)')}>Strana 1 / 1</div>
+            </div>
+
+            <div style={S('font-size:21px;font-weight:800;letter-spacing:-.3px;margin-bottom:22px')}>{d.title}</div>
+
+            <div style={S('display:flex;align-items:center;gap:11px;padding:13px 15px;background:#FBFBFC;border:1px solid var(--border);border-radius:8px;margin-bottom:22px')}>
+              <div style={S('width:42px;height:34px;border-radius:7px;background:#F1F1F3;color:var(--ink3);display:flex;align-items:center;justify-content:center;flex-shrink:0')}>{ic('car', 18)}</div>
+              <div><div style={S('font-size:14px;font-weight:700')}>{d.brand} {d.model}</div><div style={S('font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{d.plate} · VIN {d.vin}</div></div>
+            </div>
+
+            <div style={S('display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;padding:16px 18px;background:#FBFBFC;border:1px solid var(--border);border-radius:8px;margin-bottom:28px')}>
+              {(d.rows || []).map((r, i) => (
+                <div key={i}><div style={S('font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px')}>{r[0]}</div><div style={S('font-size:13px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums')}>{r[1]}</div></div>
+              ))}
+            </div>
+
+            <div style={S('display:flex;flex-direction:column;gap:8px;margin-bottom:26px')}>{['100%', '94%', '100%', '86%'].map((w, i) => <React.Fragment key={i}>{line(w)}</React.Fragment>)}</div>
+            <div style={S('display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px')}>
+              <div><div style={S('width:150px;height:9px;border-radius:4px;background:#ECECEE;margin-bottom:7px')}></div><div style={S('font-size:11px;color:var(--ink3)')}>Razítko a podpis</div></div>
+              <div style={S(`font-size:11px;font-weight:700;color:${accent};border:1px solid ${accent};border-radius:7px;padding:5px 11px`)}>OVĚŘENO</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ============================ FAKTURA PREVIEW ============================ */
 function InvoicePreview({ vm }) {
   const d = vm.docPreview
@@ -609,6 +659,7 @@ function DocPreviewModal({ vm }) {
   if (d.kind === 'orv') return <OrvPreview vm={vm} />
   if (d.kind === 'claimdoc') return <ClaimDocPreview vm={vm} />
   if (d.kind === 'faktura') return <InvoicePreview vm={vm} />
+  if (d.kind === 'vehdoc') return <VehicleDocPreview vm={vm} />
   const headings = { Smlouva: 'Pojistná smlouva', IPID: 'Informační dokument o pojistném produktu', VPP: 'Všeobecné pojistné podmínky', Záznam: 'Záznam z jednání', Dodatek: 'Dodatek k pojistné smlouvě' }
   const heading = headings[d.type] || d.type
   const line = (w) => <div style={S(`height:9px;border-radius:4px;background:#ECECEE;width:${w}`)}></div>
@@ -1439,6 +1490,23 @@ function VehicleDetail({ vm }) {
               <div style={S('display:flex;flex-direction:column;align-items:center;flex-shrink:0')}><div style={S(`width:30px;height:30px;border-radius:9px;background:${e.bg};color:${e.color};display:flex;align-items:center;justify-content:center`)}>{e.icon}</div><span style={S('flex:1;width:2px;background:var(--border);margin:2px 0')}></span></div>
               <div style={S('flex:1;padding-bottom:22px')}><div style={S('font-size:14px;font-weight:700')}>{e.title}</div><div style={S('font-size:12.5px;color:var(--ink3);margin-top:2px')}>{e.desc}</div></div>
             </div>
+          ))}
+        </div>
+      )}
+
+      {vd.isVehDocs && (
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+          <div style={S('display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)')}>
+            <div style={S('font-size:15px;font-weight:700')}>Dokumenty vozidla</div>
+            <Hov as="span" base="display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border:1px solid var(--border2);border-radius:10px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('upload', 15)} Nahrát dokument</Hov>
+          </div>
+          {vd.vehicleDocs.map((d, i) => (
+            <Hov key={i} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
+              <div style={S(`width:36px;height:36px;border-radius:9px;background:${d.bg};color:${d.color};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{d.icon}</div>
+              <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap')}>{d.type} · {d.meta}</div></div>
+              <div style={S('width:64px;font-size:12px;color:var(--ink3);text-align:right;font-variant-numeric:tabular-nums')}>{d.size}</div>
+              <div style={S('display:flex;gap:10px;color:var(--ink3)')}><Hov as="span" onClick={d.openPreview} base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Náhled">{d.preview}</Hov><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Stáhnout">{d.download}</Hov></div>
+            </Hov>
           ))}
         </div>
       )}
