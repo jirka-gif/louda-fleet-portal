@@ -1153,8 +1153,12 @@ function Vehicles({ vm }) {
         </div>
       ) : null}
 
+      <div style={S('display:flex;align-items:center;gap:9px;margin-bottom:12px')}>
+        <span style={S('font-size:15px;font-weight:700')}>Aktivní vozidla v provozu</span>
+        <span style={S('font-size:11.5px;font-weight:700;background:#F1F1F3;color:var(--ink2);padding:2px 8px;border-radius:20px')}>{vm.vehicleRows.length}</span>
+      </div>
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
-        <HScroll minW={1120}>
+        <HScroll minW={1000}>
         <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
           <div style={S('width:18px;flex-shrink:0')}></div>
           <div style={S('width:46px;flex-shrink:0')}></div>
@@ -1164,7 +1168,6 @@ function Vehicles({ vm }) {
           <div style={S('width:110px')}>Pojišťovna</div>
           <div style={S('width:90px;text-align:right')}>Pojistné</div>
           <div style={S('width:96px')}>Obnova</div>
-          <div style={S('width:116px')}>Stav</div>
           <div style={S('width:34px;flex-shrink:0')}></div>
         </div>
         {vm.vehicleRows.map((v) => (
@@ -1177,7 +1180,6 @@ function Vehicles({ vm }) {
             <div style={S('width:110px;font-size:12.5px;color:var(--ink2)')}>{v.insurer}</div>
             <div style={S('width:90px;text-align:right;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums')}>{v.premiumF}</div>
             <div style={S('width:96px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{v.renewal}</div>
-            <div style={S('width:116px')}><span style={S(v.chipStyle)}>{v.statusLabel}</span></div>
             <div onClick={v.toggleMenu} style={S(v.kebabStyle)} title="Akce">{ic('kebab', 18)}</div>
             {v.menuOpen && <RowMenu v={v} />}
           </Hov>
@@ -1205,7 +1207,7 @@ function EndedVehiclesTable({ rows, count, showPark = true }) {
         <span style={S('font-size:12.5px;color:var(--ink3)')}>odhlášená z pojištění</span>
       </div>
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
-        <HScroll minW={showPark ? 1020 : 880}>
+        <HScroll minW={showPark ? 900 : 760}>
           <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
             <div style={S('width:46px;flex-shrink:0')}></div>
             <div style={S('width:96px;flex-shrink:0')}>SPZ</div>
@@ -1214,7 +1216,6 @@ function EndedVehiclesTable({ rows, count, showPark = true }) {
             <div style={S('width:110px')}>Pojišťovna</div>
             <div style={S('width:96px')}>Ukončeno</div>
             <div style={S('width:150px')}>Důvod</div>
-            <div style={S('width:116px')}>Stav</div>
           </div>
           {rows.map((v) => (
             <Hov key={v.id} onClick={v.onClick} base="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;opacity:.82" hover="background:#FAFAFA;opacity:1">
@@ -1225,7 +1226,6 @@ function EndedVehiclesTable({ rows, count, showPark = true }) {
               <div style={S('width:110px;font-size:12.5px;color:var(--ink2)')}>{v.insurer}</div>
               <div style={S('width:96px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{v.endedDate}</div>
               <div style={S('width:150px;font-size:12.5px;color:var(--ink2)')}>{v.endReason}</div>
-              <div style={S('width:116px')}><span style={S(v.chipStyle)}>{v.statusLabel}</span></div>
             </Hov>
           ))}
         </HScroll>
