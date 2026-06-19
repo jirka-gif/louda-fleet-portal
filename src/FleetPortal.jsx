@@ -548,7 +548,6 @@ export default function FleetPortal() {
     const otherMap = {
       documents: ['Dokumenty vozidla', 'Velký a malý technický průkaz, zelená karta, smlouvy a faktury k tomuto vozidlu.', ic('file', 24)],
       costs: ['Náklady & TCO', 'Celkové náklady vlastnictví: pojistné, servis, palivo a amortizace v čase.', ic('chart', 24)],
-      notes: ['Poznámky', 'Interní poznámky fleet manažera k vozidlu.', ic('doc2', 24)],
     }
     const o = otherMap[tab] || ['', '', null]
     return {
@@ -558,7 +557,8 @@ export default function FleetPortal() {
         statusLabel: m.label, chipStyle: statusChip(v.status), facts, actions, specs, assign, products, productsExport, productsTotalF: czk(productsTotal), claims, timeline,
         premiumF: czk(v.premium), productCount: products.filter((p) => p.status !== 'nocasco').length, renewal: v.renewal,
         isOverview: tab === 'overview', isInsurance: tab === 'insurance', isClaims: tab === 'claims', isTimeline: tab === 'timeline',
-        isOther: ['documents', 'costs', 'notes'].includes(tab), otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
+        isNotes: tab === 'notes',
+        isOther: ['documents', 'costs'].includes(tab), otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
       },
     }
   }

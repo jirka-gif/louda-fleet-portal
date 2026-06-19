@@ -1377,6 +1377,12 @@ function VehicleDetail({ vm }) {
         </div>
       )}
 
+      {vd.isNotes && (
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:48px;text-align:center')}>
+          <Hov as="span" base="display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 20px;background:var(--star);color:#fff;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer" hover="filter:brightness(.95)">{ic('plus', 16)} Přidat poznámku</Hov>
+        </div>
+      )}
+
       {vd.isOther && (
         <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:48px;text-align:center;color:var(--ink3)')}>
           <div style={S('width:52px;height:52px;border-radius:13px;background:#F4F4F5;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--ink3)')}>{vd.otherIcon}</div>
