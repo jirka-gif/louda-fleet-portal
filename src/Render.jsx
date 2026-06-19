@@ -138,6 +138,87 @@ export default function Render({ vm }) {
   )
 }
 
+/* ============================ ORV PREVIEW (osvědčení o registraci vozidla) ============================ */
+// Stylized Czech vehicle registration certificate using the EU harmonised
+// item codes (Directive 1999/37/EC). All data is fictional / anonymised.
+function OrvPreview({ vm }) {
+  const d = vm.docPreview
+  const isEv = (d.fuel || '').includes('Elektro')
+  const paliva = { Diesel: 'Motorová nafta', 'Benzín': 'Benzín', Elektro: 'Elektřina', Hybrid: 'Hybrid (benzín/elektro)', PHEV: 'Plug-in hybrid' }
+  const cat = (d.model || '').includes('Transporter') ? 'N1' : 'M1'
+  const fields = [
+    ['A', 'Registrační značka', d.plate, false],
+    ['B', 'Datum první registrace', `1. 4. ${d.year}`, false],
+    ['D.1', 'Tovární značka', d.brand, false],
+    ['D.3', 'Obchodní označení', d.model, false],
+    ['E', 'Identifikační číslo vozidla (VIN)', d.vin, true],
+    ['J', 'Kategorie vozidla', cat, false],
+    ['P.3', 'Palivo / zdroj energie', paliva[d.fuel] || d.fuel, false],
+    ['P.1', 'Zdvihový objem', isEv ? '—' : '1 968 cm³', false],
+    ['P.2', 'Největší výkon', isEv ? '150 kW' : '110 kW', false],
+    ['F.1', 'Nejv. tech. příp. hmotnost', cat === 'N1' ? '3 080 kg' : '2 100 kg', false],
+    ['G', 'Provozní hmotnost', cat === 'N1' ? '1 980 kg' : '1 540 kg', false],
+    ['S.1', 'Počet míst k sezení', cat === 'N1' ? '3' : '5', false],
+    ['V.9', 'Emisní úroveň (EHK/EU)', isEv ? 'EL — bez emisí' : 'EURO 6d', false],
+    ['Q', 'Poměr výkon / hmotnost', isEv ? '—' : '0,071 kW/kg', false],
+  ]
+  const LBL = 'font-size:8.5px;font-weight:700;color:#3F3F46;line-height:1.25'
+  const SUB = 'font-size:8px;font-style:italic;color:#71717A;line-height:1.2'
+
+  return (
+    <div onClick={vm.closeDocPreview} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:700px;max-width:96vw;max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('file', 18)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}><div style={S('font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{d.type} · {d.size}</div></div>
+          <Hov as="span" base="display:flex;align-items:center;gap:6px;height:34px;padding:0 13px;border:1px solid var(--border2);border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('arrow', 15)} Stáhnout</Hov>
+          <span onClick={vm.closeDocPreview} style={S('color:var(--ink3);cursor:pointer;display:flex;margin-left:4px')}>{ic('close', 18)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;background:#E9E9EC;padding:24px')}>
+          <div style={S('max-width:600px;margin:0 auto;background:#fff;border:1px solid #B8B8BE;box-shadow:0 6px 24px rgba(0,0,0,.12);padding:24px 26px;color:#111')}>
+
+            {/* header band */}
+            <div style={S('display:flex;align-items:center;gap:14px;border-bottom:2px solid #1A47A3;padding-bottom:12px;margin-bottom:14px')}>
+              <div style={S('width:34px;height:46px;border-radius:4px;background:#1A47A3;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:6px;position:relative')}>
+                <div style={S('position:absolute;top:6px;left:0;right:0;display:flex;justify-content:center;gap:2px')}>{[0, 1, 2].map((i) => <span key={i} style={S('width:2px;height:2px;border-radius:50%;background:#FFD700')}></span>)}</div>
+                <span style={S('font-size:12px;font-weight:800;letter-spacing:.5px')}>CZ</span>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={S('font-size:14px;font-weight:800;letter-spacing:.2px')}>OSVĚDČENÍ O REGISTRACI VOZIDLA</div>
+                <div style={S('font-size:11px;font-weight:700;color:#1A47A3')}>ČÁST I · Registration Certificate · Part I</div>
+                <div style={S(SUB + ';margin-top:2px')}>Česká republika · vydáno podle směrnice 1999/37/ES</div>
+              </div>
+            </div>
+
+            {/* fields grid */}
+            <div style={S('display:grid;grid-template-columns:1fr 1fr')}>
+              {fields.map((f, i) => (
+                <div key={i} style={S(`border:1px solid #C9C9CF;padding:7px 10px;background:#fff;margin-top:-1px;${i % 2 === 1 ? 'border-left:none;' : ''}${f[3] ? 'grid-column:1 / -1;' : ''}`)}>
+                  <div style={S('display:flex;align-items:baseline;gap:7px')}>
+                    <span style={S('font-size:9px;font-weight:800;color:#1A47A3;min-width:22px')}>{f[0]}</span>
+                    <span style={S(LBL)}>{f[1]}</span>
+                  </div>
+                  <div style={S(`font-size:13px;font-weight:700;color:#111;margin-top:3px;font-variant-numeric:tabular-nums;${f[0] === 'A' ? 'font-size:15px;letter-spacing:.5px;' : ''}`)}>{f[2]}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* holder */}
+            <div style={S('border:1px solid #C9C9CF;border-top:none;padding:8px 10px;background:#FBFBFC')}>
+              <div style={S('display:flex;align-items:baseline;gap:7px')}><span style={S('font-size:9px;font-weight:800;color:#1A47A3;min-width:22px')}>C.1</span><span style={S(LBL)}>Provozovatel vozidla</span></div>
+              <div style={S('font-size:13px;font-weight:700;color:#111;margin-top:3px')}>Louda Auto a.s.</div>
+              <div style={S('font-size:11.5px;color:#27272A;margin-top:1px')}>Jankovcova 1827/41, 170 00 Praha 7, IČO 256 12 348</div>
+            </div>
+
+            <div style={S(SUB + ';margin-top:12px;line-height:1.45')}>Osvědčení o registraci vozidla část I se předkládá při kontrole vozidla. Údaje odpovídají zápisu v registru silničních vozidel.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ============================ GREEN CARD PREVIEW ============================ */
 // Faithful recreation of the Czech green card (ČKP standard form, black text on
 // white paper). All personal data is anonymised / fictional.
@@ -256,6 +337,7 @@ function GreenCardPreview({ vm }) {
 function DocPreviewModal({ vm }) {
   const d = vm.docPreview
   if (d.kind === 'zk') return <GreenCardPreview vm={vm} />
+  if (d.kind === 'orv') return <OrvPreview vm={vm} />
   const headings = { Smlouva: 'Pojistná smlouva', IPID: 'Informační dokument o pojistném produktu', VPP: 'Všeobecné pojistné podmínky', Záznam: 'Záznam z jednání', Dodatek: 'Dodatek k pojistné smlouvě' }
   const heading = headings[d.type] || d.type
   const line = (w) => <div style={S(`height:9px;border-radius:4px;background:#ECECEE;width:${w}`)}></div>
@@ -1080,16 +1162,16 @@ function Documents({ vm }) {
   )
 }
 
-/* ============================ ZELENÉ KARTY ============================ */
-function DocumentsGreenCards({ vm }) {
+/* ============================ VEHICLE DOCUMENT LISTS (ZK / ORV) ============================ */
+function DocumentsVehicleDocs({ vm }) {
   const dd = vm.dd
   return (
     <div>
       <Hov onClick={dd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Dokumenty</Hov>
 
-      <div style={S('display:flex;align-items:center;gap:9px;margin-bottom:14px;padding:13px 16px;background:var(--green-soft);border-radius:12px;font-size:12.5px;color:#15803D')}>
+      <div style={S(`display:flex;align-items:center;gap:9px;margin-bottom:14px;padding:13px 16px;background:${dd.bannerBg};border-radius:12px;font-size:12.5px;color:${dd.bannerColor}`)}>
         <span style={S('display:flex;flex-shrink:0')}>{ic('doc2', 17)}</span>
-        <span>Zelená karta (mezinárodní karta automobilového pojištění) ke každému vozidlu — náhled a stažení.</span>
+        <span>{dd.banner}</span>
       </div>
 
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
@@ -1099,16 +1181,16 @@ function DocumentsGreenCards({ vm }) {
             <div style={S('width:96px;flex-shrink:0')}>SPZ</div>
             <div style={S('flex:1;min-width:0')}>Vozidlo</div>
             <div style={S('width:190px')}>VIN</div>
-            <div style={S('width:170px;text-align:right')}>Zelená karta</div>
+            <div style={S('width:170px;text-align:right')}>{dd.docColLabel}</div>
           </div>
           {dd.vehicles.map((v) => (
             <Hov key={v.id} base="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
-              <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:10px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center')}>{ic('car', 18)}</div>
+              <div style={S(`width:40px;height:40px;flex-shrink:0;border-radius:10px;background:${dd.iconBg};color:${dd.iconColor};display:flex;align-items:center;justify-content:center`)}>{ic('car', 18)}</div>
               <div style={S('width:96px;flex-shrink:0;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums')}>{v.plate}</div>
               <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{v.brand} {v.model}</div><div style={S('font-size:12px;color:var(--ink3)')}>{v.driver} · {v.year} · {v.insurer}</div></div>
               <div style={S('width:190px;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{v.vin}</div>
               <div style={S('width:170px;display:flex;align-items:center;justify-content:flex-end;gap:10px')}>
-                <span style={S('font-size:11.5px;font-weight:700;color:#15803D;background:var(--green-soft);padding:4px 10px;border-radius:20px;white-space:nowrap')}>ZK platná</span>
+                <span style={S(`font-size:11.5px;font-weight:700;color:${dd.bannerColor};background:${dd.iconBg};padding:4px 10px;border-radius:20px;white-space:nowrap`)}>{dd.badgeLabel}</span>
                 <Hov as="span" onClick={v.openPreview} base="cursor:pointer;display:flex;color:var(--ink3)" hover="color:var(--blue)" title="Náhled">{v.preview}</Hov>
                 <Hov as="span" base="cursor:pointer;display:flex;color:var(--ink3)" hover="color:var(--blue)" title="Stáhnout">{v.download}</Hov>
               </div>
@@ -1123,7 +1205,7 @@ function DocumentsGreenCards({ vm }) {
 /* ============================ DOCUMENTS DETAIL ============================ */
 function DocumentsDetail({ vm }) {
   const dd = vm.dd
-  if (dd.cat === 'zk') return <DocumentsGreenCards vm={vm} />
+  if (dd.cat === 'zk' || dd.cat === 'orv') return <DocumentsVehicleDocs vm={vm} />
   return (
     <div>
       <Hov onClick={dd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Dokumenty</Hov>
