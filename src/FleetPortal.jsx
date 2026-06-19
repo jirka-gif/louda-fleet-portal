@@ -30,6 +30,7 @@ export default function FleetPortal() {
     rowMenu: null, toast: null,
     np: false, npData: { name: '', manager: '', insurer: 'Kooperativa', policy: '', start: '1. 7. 2026', vehicles: '' },
     newFleets: [],
+    docCat: null, docOpen: {},
     av: false, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avLoading: false, avFleet: 'f1',
     avCover: { pr: true, hav: true, skla: true, uraz: false, zavazadla: false, zver: true, nahradni: false, strojni: false, gap: false, zivel: false, asist: true, prac: false },
     avHavRozsah: 'allrisk', avHavSpoluucast: '5% / 5 000 Kč', avPrLimit: '100 / 100 mil. Kč', avUziti: 'Běžné užití',
@@ -130,7 +131,7 @@ export default function FleetPortal() {
       ['analytics', 'Analytika', 'chart', null],
       ['settings', 'Nastavení', 'settings', null],
     ]
-    const activeRoute = r === 'fleet-detail' ? 'fleets' : r === 'vehicle-detail' ? 'vehicles' : r === 'bonifikace-detail' ? 'bonifikace' : r
+    const activeRoute = r === 'fleet-detail' ? 'fleets' : r === 'vehicle-detail' ? 'vehicles' : r === 'bonifikace-detail' ? 'bonifikace' : r === 'documents-detail' ? 'documents' : r
     const nav = navItems.map(([id, label, icon, badge]) => {
       const on = activeRoute === id
       return {
@@ -147,6 +148,7 @@ export default function FleetPortal() {
       insurance: ['Pojištění', 'Smlouvy a krytí napříč parky'],
       claims: ['Pojistné události', '9 otevřených · 47 uzavřených letos'],
       documents: ['Dokumenty', 'Centrální úložiště dokumentů'],
+      'documents-detail': ['Pojistné smlouvy', 'Flotilové smlouvy a jejich dokumenty'],
       bonifikace: ['Bonifikace', 'Vrácení části pojistného dle škodního průběhu'],
       contacts: ['Kontakty', 'Manažeři, řidiči, partneři'],
       analytics: ['Analytika', 'Náklady, trendy a úspory'],
@@ -191,6 +193,8 @@ export default function FleetPortal() {
       isDashboard: r === 'dashboard', isFleets: r === 'fleets', isFleetDetail: r === 'fleet-detail',
       isVehicles: r === 'vehicles', isVehicleDetail: r === 'vehicle-detail',
       isInsurance: r === 'insurance', isClaims: r === 'claims', isDocuments: r === 'documents', isAnalytics: r === 'analytics', isContacts: r === 'contacts', isSettings: r === 'settings',
+      isDocumentsDetail: r === 'documents-detail',
+      openDocCat: (cat) => navigate('documents-detail', { docCat: cat, docOpen: {} }), goDocuments: () => navigate('documents'),
       isBonifikace: r === 'bonifikace', isBonifikaceDetail: r === 'bonifikace-detail',
       openBonus: (id) => navigate('bonifikace-detail', { fleetId: id }), goBonifikace: () => navigate('bonifikace'),
       claimWizard: state.claimWizard, closeClaimWizard: () => setState({ claimWizard: false }),
@@ -487,9 +491,9 @@ export default function FleetPortal() {
 
   const documentsVM = () => {
     if (state.route !== 'documents') return {}
-    const F = (name, count, icon, bg, color) => ({ name, count, icon: ic(icon, 18), bg, color })
+    const F = (name, count, icon, bg, color, onClick) => ({ name, count, icon: ic(icon, 18), bg, color, onClick, nav: !!onClick })
     const docFolders = [
-      F('Pojistné smlouvy', 1174, 'shield', 'var(--star-soft)', 'var(--star)'),
+      F('Pojistné smlouvy', 1174, 'shield', 'var(--star-soft)', 'var(--star)', () => navigate('documents-detail', { docCat: 'smlouvy', docOpen: {} })),
       F('Zelené karty', 312, 'doc2', 'var(--green-soft)', 'var(--green)'),
       F('Technické průkazy', 312, 'file', 'var(--blue-soft)', 'var(--blue)'),
       F('Faktury', 486, 'banknote', 'var(--amber-soft)', 'var(--amber)'),
@@ -508,6 +512,30 @@ export default function FleetPortal() {
       Dr('Servisní list 4VW8800.pdf', 'VW Transporter · 4VW 8800', 'Servis', '5. 6. 2026', '132 kB', 'wrench', '#F1F1F3', 'var(--ink2)'),
     ]
     return { docFolders, docRows }
+  }
+
+  const documentsDetailVM = () => {
+    if (state.route !== 'documents-detail') return {}
+    const open = state.docOpen
+    const contracts = allFleets.map((f) => {
+      const isOpen = !!open[f.id]
+      const start = f.policyStart || '—'
+      const docs = [
+        { name: `Pojistná smlouva ${f.policy}.pdf`, type: 'Smlouva', date: start, size: '328 kB', icon: ic('shield', 17), bg: 'var(--star-soft)', color: 'var(--star)' },
+        { name: `IPID – ${f.insurers[0]}.pdf`, type: 'IPID', date: start, size: '92 kB', icon: ic('file', 17), bg: 'var(--blue-soft)', color: 'var(--blue)' },
+        { name: 'Všeobecné pojistné podmínky.pdf', type: 'VPP', date: start, size: '1,4 MB', icon: ic('doc2', 17), bg: '#F1F1F3', color: 'var(--ink2)' },
+        { name: 'Záznam z jednání.pdf', type: 'Záznam', date: start, size: '214 kB', icon: ic('doc2', 17), bg: 'var(--amber-soft)', color: 'var(--amber)' },
+        { name: 'Dodatek č. 1 – aktualizace vozidel.pdf', type: 'Dodatek', date: start, size: '146 kB', icon: ic('file', 17), bg: 'var(--green-soft)', color: 'var(--green)' },
+      ].map((d) => ({ ...d, preview: ic('search', 16), download: ic('arrow', 16) }))
+      return {
+        id: f.id, insurer: f.insurers[0], policy: f.policy || '—', fleetName: f.name, start,
+        docCount: docs.length, docs, isOpen,
+        toggle: () => setState((s) => ({ docOpen: { ...s.docOpen, [f.id]: !s.docOpen[f.id] } })),
+        chevStyle: `display:flex;color:var(--ink3);transition:transform .15s;transform:rotate(${isOpen ? '180deg' : '0deg'})`,
+        headStyle: `display:flex;align-items:center;gap:14px;padding:15px 18px;cursor:pointer;background:${isOpen ? '#FBFBFC' : '#fff'}`,
+      }
+    })
+    return { dd: { contracts, count: contracts.length, goBack: () => navigate('documents') } }
   }
 
   const analyticsVM = () => {
@@ -734,7 +762,7 @@ export default function FleetPortal() {
 
   const vm = {
     ...shellVM(), ...dashboardVM(), ...fleetsVM(), ...fleetDetailVM(), ...vehiclesVM(), ...vehicleDetailVM(),
-    ...insuranceVM(), ...claimsVM(), ...documentsVM(), ...analyticsVM(), ...contactsVM(), ...settingsVM(), ...bonifikaceVM(), ...bonifikaceDetailVM(), ...wizardVM(), ...addVehicleVM(),
+    ...insuranceVM(), ...claimsVM(), ...documentsVM(), ...documentsDetailVM(), ...analyticsVM(), ...contactsVM(), ...settingsVM(), ...bonifikaceVM(), ...bonifikaceDetailVM(), ...wizardVM(), ...addVehicleVM(),
   }
 
   return <Render vm={vm} />

@@ -103,6 +103,7 @@ export default function Render({ vm }) {
             {vm.isInsurance && <Insurance vm={vm} />}
             {vm.isClaims && <Claims vm={vm} />}
             {vm.isDocuments && <Documents vm={vm} />}
+            {vm.isDocumentsDetail && <DocumentsDetail vm={vm} />}
             {vm.isBonifikace && <Bonifikace vm={vm} />}
             {vm.isBonifikaceDetail && <BonifikaceDetail vm={vm} />}
             {vm.isAnalytics && <Analytics vm={vm} />}
@@ -888,7 +889,7 @@ function Documents({ vm }) {
       </div>
       <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px')}>
         {vm.docFolders.map((f, i) => (
-          <Hov key={i} base="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer" hover="border-color:#D4D4D8;background:#FAFAFA"><div style={S('display:flex;align-items:center;justify-content:space-between')}><div style={S(`width:38px;height:38px;border-radius:10px;background:${f.bg};color:${f.color};display:flex;align-items:center;justify-content:center`)}>{f.icon}</div><span style={S('color:var(--ink3);display:flex')}>{ic('arrow', 16)}</span></div><div style={S('font-size:14px;font-weight:700;margin-top:12px')}>{f.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{f.count} souborů</div></Hov>
+          <Hov key={i} onClick={f.onClick} base="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer" hover="border-color:#D4D4D8;background:#FAFAFA"><div style={S('display:flex;align-items:center;justify-content:space-between')}><div style={S(`width:38px;height:38px;border-radius:10px;background:${f.bg};color:${f.color};display:flex;align-items:center;justify-content:center`)}>{f.icon}</div><span style={S('color:var(--ink3);display:flex')}>{ic('arrow', 16)}</span></div><div style={S('font-size:14px;font-weight:700;margin-top:12px')}>{f.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{f.count} souborů</div></Hov>
         ))}
       </div>
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
@@ -905,6 +906,52 @@ function Documents({ vm }) {
           </Hov>
         ))}
         </HScroll>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ DOCUMENTS DETAIL (Pojistné smlouvy) ============================ */
+function DocumentsDetail({ vm }) {
+  const dd = vm.dd
+  return (
+    <div>
+      <Hov onClick={dd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Dokumenty</Hov>
+
+      <div style={S('display:flex;align-items:center;gap:9px;margin-bottom:14px;padding:13px 16px;background:var(--blue-soft);border-radius:12px;font-size:12.5px;color:var(--blue-ink)')}>
+        <span style={S('display:flex;flex-shrink:0')}>{ic('shield', 17)}</span>
+        <span>{dd.count} flotilových smluv. Rozbalte smlouvu pro zobrazení všech dokumentů (smlouva, IPID, VPP, záznam z jednání, dodatky).</span>
+      </div>
+
+      <div style={S('display:flex;flex-direction:column;gap:12px')}>
+        {dd.contracts.map((c) => (
+          <div key={c.id} style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+            <Hov onClick={c.toggle} base={c.headStyle} hover="background:#FAFAFA">
+              <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:11px;background:var(--star-soft);color:var(--star);display:flex;align-items:center;justify-content:center')}>{ic('shield', 20)}</div>
+              <div style={S('flex:1;min-width:0')}>
+                <div style={S('font-size:14.5px;font-weight:700;line-height:1.2')}>{c.insurer}</div>
+                <div style={S('font-size:12px;color:var(--ink3)')}>Flotilová smlouva č. <span style={S('font-variant-numeric:tabular-nums')}>{c.policy}</span> · {c.fleetName}</div>
+              </div>
+              <span style={S('font-size:11.5px;font-weight:700;color:var(--ink2);background:#F1F1F3;padding:3px 9px;border-radius:20px;white-space:nowrap')}>{c.docCount} dokumentů</span>
+              <span style={S(c.chevStyle)}>{ic('chevron', 18)}</span>
+            </Hov>
+            {c.isOpen && (
+              <div style={S('border-top:1px solid var(--border)')}>
+                <HScroll minW={620}>
+                  {c.docs.map((d, j) => (
+                    <Hov key={j} base="display:flex;align-items:center;gap:14px;padding:12px 18px 12px 22px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
+                      <div style={S(`width:34px;height:34px;border-radius:9px;background:${d.bg};color:${d.color};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{d.icon}</div>
+                      <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{d.name}</div><div style={S('font-size:11.5px;color:var(--ink3)')}>{d.type}</div></div>
+                      <div style={S('width:90px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{d.date}</div>
+                      <div style={S('width:60px;font-size:12px;color:var(--ink3)')}>{d.size}</div>
+                      <div style={S('display:flex;gap:10px;color:var(--ink3)')}><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)">{d.preview}</Hov><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)">{d.download}</Hov></div>
+                    </Hov>
+                  ))}
+                </HScroll>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )
