@@ -100,6 +100,7 @@ export default function Render({ vm }) {
             {vm.isFleetDetail && <FleetDetail vm={vm} />}
             {vm.isVehicles && <Vehicles vm={vm} />}
             {vm.isVehicleDetail && <VehicleDetail vm={vm} />}
+            {vm.isClaimDetail && <ClaimDetail vm={vm} />}
             {vm.isInsurance && <Insurance vm={vm} />}
             {vm.isClaims && <Claims vm={vm} />}
             {vm.isDocuments && <Documents vm={vm} />}
@@ -205,6 +206,40 @@ function UnsubscribeModal({ vm }) {
               <div onClick={vm.submitUnsub} style={S('height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--star);cursor:pointer')}>{ic('logout', 16)} Odeslat ke schválení</div>
             </>
           )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ CLAIM DOCUMENT PREVIEW ============================ */
+function ClaimDocPreview({ vm }) {
+  const d = vm.docPreview
+  const line = (w) => <div style={S(`height:9px;border-radius:4px;background:#ECECEE;width:${w}`)}></div>
+  return (
+    <div onClick={vm.closeDocPreview} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:680px;max-width:96vw;max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--star-soft);color:var(--star);display:flex;align-items:center;justify-content:center')}>{ic('doc2', 18)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}><div style={S('font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{d.type} · {d.size}</div></div>
+          <Hov as="span" base="display:flex;align-items:center;gap:6px;height:34px;padding:0 13px;border:1px solid var(--border2);border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('arrow', 15)} Stáhnout</Hov>
+          <span onClick={vm.closeDocPreview} style={S('color:var(--ink3);cursor:pointer;display:flex;margin-left:4px')}>{ic('close', 18)}</span>
+        </div>
+        <div style={S('flex:1;overflow-y:auto;background:#F1F1F3;padding:24px')}>
+          <div style={S('max-width:600px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.08);padding:44px 48px;min-height:740px')}>
+            <div style={S('display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px')}>
+              <InsurerLogo name={d.insurer} size={42} />
+              <div style={S('text-align:right;font-size:11px;color:var(--ink3)')}>Škoda {d.claimId}<br />{d.date}</div>
+            </div>
+            <div style={S('font-size:21px;font-weight:800;letter-spacing:-.3px;margin-bottom:18px')}>{d.type}</div>
+            <div style={S('display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;padding:16px 18px;background:#FBFBFC;border:1px solid var(--border);border-radius:8px;margin-bottom:28px')}>
+              {[['Číslo škody', d.claimId], ['Pojistitel', d.insurer], ['Vozidlo', `${d.brand} ${d.model}`], ['SPZ', d.plate], ['Datum nahlášení', d.date], ['Pojistník', 'Louda Auto a.s.']].map((r, i) => (
+                <div key={i}><div style={S('font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px')}>{r[0]}</div><div style={S('font-size:13px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums')}>{r[1]}</div></div>
+              ))}
+            </div>
+            <div style={S('display:flex;flex-direction:column;gap:9px')}>{['100%', '94%', '100%', '88%', '96%', '70%'].map((w, i) => <React.Fragment key={i}>{line(w)}</React.Fragment>)}</div>
+            <div style={S('margin-top:24px;display:flex;flex-direction:column;gap:9px')}>{['100%', '90%', '100%', '82%'].map((w, i) => <React.Fragment key={i}>{line(w)}</React.Fragment>)}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -411,6 +446,7 @@ function DocPreviewModal({ vm }) {
   const d = vm.docPreview
   if (d.kind === 'zk') return <GreenCardPreview vm={vm} />
   if (d.kind === 'orv') return <OrvPreview vm={vm} />
+  if (d.kind === 'claimdoc') return <ClaimDocPreview vm={vm} />
   const headings = { Smlouva: 'Pojistná smlouva', IPID: 'Informační dokument o pojistném produktu', VPP: 'Všeobecné pojistné podmínky', Záznam: 'Záznam z jednání', Dodatek: 'Dodatek k pojistné smlouvě' }
   const heading = headings[d.type] || d.type
   const line = (w) => <div style={S(`height:9px;border-radius:4px;background:#ECECEE;width:${w}`)}></div>
@@ -1274,6 +1310,100 @@ function Insurance({ vm }) {
           </React.Fragment>
         ))}
         </HScroll>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ DETAIL ŠKODY ============================ */
+function ClaimDetail({ vm }) {
+  const cd = vm.cd
+  return (
+    <div>
+      <Hov onClick={cd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Škody</Hov>
+
+      {/* hlavička */}
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px;margin-bottom:16px')}>
+        <div style={S('display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px')}>
+          <div style={S('display:flex;gap:16px;align-items:center')}>
+            <div style={S('width:52px;height:52px;border-radius:13px;background:var(--star-soft);color:var(--star);display:flex;align-items:center;justify-content:center')}>{ic('alert', 26)}</div>
+            <div>
+              <div style={S('display:flex;align-items:center;gap:10px;flex-wrap:wrap')}><div style={S('font-size:21px;font-weight:800;letter-spacing:-.5px')}>{cd.type}</div><span style={S(cd.riskStyle)}>{cd.risk}</span></div>
+              <div style={S('font-size:13px;color:var(--ink3);margin-top:3px')}>Škoda <span style={S('color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums')}>{cd.id}</span> · <Hov as="span" onClick={cd.goVehicle} base="color:var(--blue);font-weight:600;cursor:pointer" hover="text-decoration:underline">{cd.plate} {cd.brand} {cd.model}</Hov></div>
+            </div>
+          </div>
+          <div style={S('display:flex;gap:10px;flex-wrap:wrap;align-items:center')}>
+            <div style={S('padding:10px 16px;border:1px solid var(--border);border-radius:12px;text-align:right')}><div style={S('font-size:11.5px;color:var(--ink3)')}>Výše škody</div><div style={S('font-size:19px;font-weight:800;letter-spacing:-.5px')}>{cd.estimateF}</div></div>
+            <div style={S(`padding:10px 16px;border-radius:12px;text-align:right;background:${cd.paid ? 'var(--green-soft)' : '#F4F4F5'}`)}><div style={S('font-size:11.5px;color:var(--ink3)')}>Vyplaceno</div><div style={S(`font-size:19px;font-weight:800;letter-spacing:-.5px;color:${cd.paid ? 'var(--green)' : 'var(--ink3)'}`)}>{cd.payoutF}</div></div>
+            <span style={S(cd.chipStyle)}>{cd.statusLabel}</span>
+          </div>
+        </div>
+        {/* průběh */}
+        <div style={S('margin-top:18px')}>
+          <div style={S('display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink3);margin-bottom:5px')}><span>Průběh likvidace</span><span>{cd.progress}%</span></div>
+          <div style={S('height:7px;background:#F1F1F3;border-radius:4px;overflow:hidden')}><div style={S(`height:100%;width:${cd.progress}%;background:${cd.paid ? 'var(--green)' : 'var(--amber)'};border-radius:4px`)}></div></div>
+        </div>
+      </div>
+
+      {/* souhrn + popis */}
+      <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px')}>
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px')}>
+          <div style={S('font-size:15px;font-weight:700;margin-bottom:14px')}>Souhrn události</div>
+          <div style={S('display:grid;grid-template-columns:1fr 1fr;gap:13px 20px')}>
+            {cd.facts.map((x, i) => <div key={i}><div style={S('font-size:11.5px;color:var(--ink3)')}>{x.k}</div><div style={S('font-size:13.5px;font-weight:600;margin-top:1px;font-variant-numeric:tabular-nums')}>{x.v}</div></div>)}
+          </div>
+        </div>
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px')}>
+          <div style={S('font-size:15px;font-weight:700;margin-bottom:14px')}>Popis události</div>
+          <div style={S('font-size:13.5px;line-height:1.6;color:var(--ink2)')}>{cd.description}</div>
+          <div style={S('display:flex;align-items:center;gap:9px;margin-top:16px;padding:11px 14px;background:#FBFBFC;border:1px solid var(--border);border-radius:11px')}>
+            <span style={S('color:var(--star);display:flex;flex-shrink:0')}>{ic('mapPin', 17)}</span>
+            <div><div style={S('font-size:11px;color:var(--ink3)')}>Místo události</div><div style={S('font-size:13px;font-weight:600')}>{cd.location}</div></div>
+          </div>
+        </div>
+      </div>
+
+      {/* fotodokumentace */}
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px')}>
+        <div style={S('display:flex;align-items:center;justify-content:space-between;margin-bottom:14px')}>
+          <div style={S('font-size:15px;font-weight:700')}>Fotodokumentace</div>
+          <span style={S('font-size:12.5px;color:var(--ink3)')}>{cd.photoCount} snímků</span>
+        </div>
+        <div style={S('display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px')}>
+          {Array.from({ length: cd.photoCount }).map((_, i) => (
+            <div key={i} style={S('aspect-ratio:4/3;border-radius:10px;background:linear-gradient(135deg,#EEF1F6,#E2E7EF);display:flex;align-items:center;justify-content:center;color:#B6BCC6;position:relative')}>{ic('camera', 24)}<span style={S('position:absolute;bottom:6px;left:8px;font-size:10px;color:#8E99AB;font-weight:600')}>IMG_{String(i + 1).padStart(2, '0')}</span></div>
+          ))}
+        </div>
+      </div>
+
+      {/* dokumenty */}
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px')}>
+        <div style={S('padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:700')}>Nahrané dokumenty</div>
+        {cd.docs.map((d, i) => (
+          <Hov key={i} base="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
+            <div style={S(`width:36px;height:36px;border-radius:9px;background:${d.bg};color:${d.color};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{d.icon}</div>
+            <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{d.type}</div></div>
+            <div style={S('width:70px;font-size:12px;color:var(--ink3)')}>{d.size}</div>
+            <div style={S('display:flex;gap:10px;color:var(--ink3)')}><Hov as="span" onClick={d.openPreview} base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Náhled">{d.preview}</Hov><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Stáhnout">{d.download}</Hov></div>
+          </Hov>
+        ))}
+      </div>
+
+      {/* časová osa */}
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px 24px')}>
+        <div style={S('font-size:15px;font-weight:700;margin-bottom:18px')}>Časová osa likvidace</div>
+        {cd.timeline.map((e, i) => (
+          <div key={i} style={S('display:flex;gap:16px')}>
+            <div style={S('display:flex;flex-direction:column;align-items:center;flex-shrink:0')}>
+              <div style={S(`width:34px;height:34px;border-radius:10px;background:${e.tileBg};color:${e.tileColor};display:flex;align-items:center;justify-content:center`)}>{e.icon}</div>
+              {i < cd.timeline.length - 1 && <span style={S('flex:1;width:2px;background:var(--border);margin:3px 0')}></span>}
+            </div>
+            <div style={S('flex:1;padding-bottom:20px')}>
+              <div style={S('display:flex;align-items:center;gap:9px;flex-wrap:wrap')}><div style={S(`font-size:14px;font-weight:700;color:${e.state === 'pending' ? 'var(--ink3)' : 'var(--ink)'}`)}>{e.title}</div>{e.badge ? <span style={S('font-size:10.5px;font-weight:700;color:var(--amber);background:var(--amber-soft);padding:2px 8px;border-radius:20px')}>{e.badge}</span> : null}<span style={S('font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{e.date}</span></div>
+              <div style={S('font-size:12.5px;color:var(--ink3);margin-top:2px')}>{e.desc}</div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

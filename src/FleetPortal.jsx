@@ -77,6 +77,7 @@ export default function FleetPortal() {
   const navigate = (route, patch) => setState({ route, ...(patch || {}), search: false, notif: false, companyMenu: false, sidebar: false })
   const openFleet = (id) => navigate('fleet-detail', { fleetId: id, fleetTab: 'overview' })
   const openVehicle = (id) => navigate('vehicle-detail', { vehicleId: id, vehicleTab: 'overview' })
+  const openClaim = (id) => navigate('claim-detail', { claimId: id })
   const toggleNotif = () => setState((s) => ({ notif: !s.notif, companyMenu: false }))
   const toggleAI = () => setState((s) => ({ ai: !s.ai }))
   const openSearch = () => setState({ search: true })
@@ -95,7 +96,7 @@ export default function FleetPortal() {
       statusLabel: cm.label, bg: cm.bg, color: cm.c,
       chipStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:${cm.c};background:${cm.bg};padding:3px 9px;border-radius:20px;white-space:nowrap`,
       riskStyle: `display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:${rm.c};background:${rm.bg};padding:3px 8px;border-radius:6px;white-space:nowrap`,
-      onClick: () => openVehicle(c.vId),
+      onClick: () => openClaim(c.id),
     }
   }
   const setVf = (k, v) => setState((s) => ({ vf: { ...s.vf, [k]: v } }))
@@ -170,7 +171,7 @@ export default function FleetPortal() {
       ['analytics', 'Analytika', 'chart', null],
       ['settings', 'Nastavení', 'settings', null],
     ]
-    const activeRoute = r === 'fleet-detail' ? 'fleets' : r === 'vehicle-detail' ? 'vehicles' : r === 'bonifikace-detail' ? 'bonifikace' : r === 'documents-detail' ? 'documents' : r
+    const activeRoute = r === 'fleet-detail' ? 'fleets' : r === 'vehicle-detail' ? 'vehicles' : r === 'bonifikace-detail' ? 'bonifikace' : r === 'documents-detail' ? 'documents' : r === 'claim-detail' ? 'claims' : r
     const nav = navItems.map(([id, label, icon, badge]) => {
       const on = activeRoute === id
       return {
@@ -198,6 +199,7 @@ export default function FleetPortal() {
     else if (r === 'vehicle-detail') { const v = vehiclesData.find((x) => x.id === state.vehicleId); title = `${v.brand} ${v.model}`; sub = `${v.plate} · ${fleetName(v.fleet)}` }
     else if (r === 'bonifikace-detail') { const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]; title = `Bonifikace · ${f.insurers[0]}`; sub = `Flotilová smlouva č. ${f.policy || '—'}` }
     else if (r === 'documents-detail') { const tm = { zk: ['Zelené karty', 'Zelená karta ke každému vozidlu'], orv: ['Technické průkazy', 'Osvědčení o registraci vozidla (ORV)'] }; const t = tm[state.docCat] || ['Pojistné smlouvy', 'Flotilové smlouvy a jejich dokumenty']; title = t[0]; sub = t[1] }
+    else if (r === 'claim-detail') { const c = claimsData.find((x) => x.id === state.claimId) || claimsData[0]; title = `Škoda ${c.id}`; sub = `${c.type} · ${c.vehicle}` }
     else { const t = titles[r] || ['', '']; title = t[0]; sub = t[1] }
 
     const aiMessages = state.aiMessages.map((m) => ({
@@ -237,6 +239,7 @@ export default function FleetPortal() {
       openDocCat: (cat) => navigate('documents-detail', { docCat: cat, docOpen: {} }), goDocuments: () => navigate('documents'),
       docPreview: state.docPreview, closeDocPreview: () => setState({ docPreview: null }),
       isBonifikace: r === 'bonifikace', isBonifikaceDetail: r === 'bonifikace-detail',
+      isClaimDetail: r === 'claim-detail',
       openBonus: (id) => navigate('bonifikace-detail', { fleetId: id }), goBonifikace: () => navigate('bonifikace'),
       claimWizard: state.claimWizard, closeClaimWizard: () => setState({ claimWizard: false }),
       toast: state.toast, rowMenuOpen: state.rowMenu !== null, closeRowMenu: () => setState({ rowMenu: null }),
@@ -830,6 +833,64 @@ export default function FleetPortal() {
     }
   }
 
+  const claimDetailVM = () => {
+    if (state.route !== 'claim-detail') return {}
+    const c = claimsData.find((x) => x.id === state.claimId) || claimsData[0]
+    const v = vehiclesData.find((x) => x.id === c.vId) || {}
+    const cm = claimStatusMeta[c.status]
+    const rm = RISK_META[c.risk] || { bg: '#F1F1F3', c: 'var(--ink2)' }
+    const riskFull = { POV: 'Povinné ručení', HAV: 'Havarijní pojištění', Skla: 'Pojištění skel' }[c.risk] || c.risk
+    const parseCz = (s) => { const p = (s || '').replace(/\s/g, '').split('.').map(Number); return new Date(p[2], p[1] - 1, p[0]) }
+    const fmt = (dt) => `${dt.getDate()}. ${dt.getMonth() + 1}. ${dt.getFullYear()}`
+    const addDays = (s, n) => { const dt = parseCz(s); dt.setDate(dt.getDate() + n); return fmt(dt) }
+
+    const facts = [
+      { k: 'Vozidlo', v: `${v.brand} ${v.model}` }, { k: 'SPZ', v: v.plate }, { k: 'VIN', v: v.vin },
+      { k: 'Riziko', v: riskFull }, { k: 'Pojišťovna', v: c.insurer }, { k: 'Číslo smlouvy', v: fleetInsurerPolicy(c.insurer, v.fleet || 'f1') },
+      { k: 'Nahlásil', v: c.reportedBy }, { k: 'Datum nahlášení', v: c.date }, { k: 'Místo události', v: c.location },
+      { k: 'Likvidátor', v: c.adjuster }, { k: 'Servis', v: c.shop }, { k: 'Policie ČR', v: c.police ? 'Ano' : 'Ne' },
+    ]
+    const D = (name, type, size, icon, bg, color) => ({ name, type, size, icon: ic(icon, 17), bg, color, preview: ic('search', 16), download: ic('arrow', 16), openPreview: () => setState({ docPreview: { kind: 'claimdoc', name, type, size, claimId: c.id, plate: v.plate, brand: v.brand, model: v.model, insurer: c.insurer, date: c.date } }) })
+    const docs = [
+      D('Oznámení pojistné události.pdf', 'Oznámení', '142 kB', 'alert', 'var(--star-soft)', 'var(--star)'),
+      D('Fotodokumentace poškození.pdf', 'Fotodokumentace', '3,4 MB', 'camera', 'var(--blue-soft)', 'var(--blue)'),
+      ...(c.police ? [D('Policejní protokol.pdf', 'Protokol Policie ČR', '268 kB', 'doc2', '#F1F1F3', 'var(--ink2)')] : []),
+      ...(c.progress >= 50 ? [D('Protokol o prohlídce vozidla.pdf', 'Prohlídka', '210 kB', 'check2', 'var(--green-soft)', 'var(--green)')] : []),
+      ...(c.shop !== '—' && c.progress >= 80 ? [D('Faktura za opravu.pdf', 'Faktura', '186 kB', 'banknote', 'var(--amber-soft)', 'var(--amber)')] : []),
+      ...(c.payout > 0 ? [D('Rozhodnutí o pojistném plnění.pdf', 'Rozhodnutí', '120 kB', 'shield', 'var(--green-soft)', 'var(--green)')] : []),
+    ]
+
+    const stepDefs = [
+      { t: 'Nahlášení události', date: c.date, desc: `Škodu nahlásil ${c.reportedBy} · ${c.insurer}`, th: 0, icon: 'alert' },
+      { t: 'Přiřazení likvidátora', date: c.adjuster === 'Nepřiřazen' ? '—' : addDays(c.date, 1), desc: c.adjuster === 'Nepřiřazen' ? 'Čeká na přiřazení likvidátora' : `Likvidátor ${c.adjuster}`, th: 15, icon: 'user1' },
+      { t: 'Prohlídka a fotodokumentace', date: addDays(c.date, 3), desc: 'Doložena fotodokumentace poškození vozidla', th: 30, icon: 'camera' },
+      { t: 'Stanovení výše škody', date: addDays(c.date, 5), desc: `Odhad škody ${czk(c.estimate)}`, th: 50, icon: 'doc2' },
+      { t: c.shop !== '—' ? 'Oprava v servisu' : 'Likvidace události', date: addDays(c.date, 8), desc: c.shop !== '—' ? c.shop : 'Probíhá likvidace u pojišťovny', th: 70, icon: 'wrench' },
+      { t: 'Výplata pojistného plnění', date: c.payout > 0 ? addDays(c.date, 12) : '—', desc: c.payout > 0 ? `Vyplaceno ${czk(c.payout)}` : 'Dosud nevyplaceno', th: 100, icon: 'banknote' },
+    ]
+    let currentSet = false
+    const timeline = stepDefs.map((s) => {
+      const done = c.progress >= s.th
+      let st = 'pending'
+      if (done) st = 'done'; else if (!currentSet) { st = 'current'; currentSet = true }
+      const col = st === 'done' ? { bg: 'var(--green-soft)', c: 'var(--green)' } : st === 'current' ? { bg: 'var(--amber-soft)', c: 'var(--amber)' } : { bg: '#F1F1F3', c: 'var(--ink3)' }
+      return { title: s.t, date: s.date, desc: s.desc, icon: ic(s.icon, 16), tileBg: col.bg, tileColor: col.c, state: st, badge: st === 'current' ? 'Probíhá' : '' }
+    })
+
+    return {
+      cd: {
+        id: c.id, type: c.type, statusLabel: cm.label,
+        chipStyle: `display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:${cm.c};background:${cm.bg};padding:4px 11px;border-radius:20px;white-space:nowrap`,
+        risk: c.risk, riskLabel: riskFull, riskStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;color:${rm.c};background:${rm.bg};padding:4px 10px;border-radius:6px;white-space:nowrap`,
+        facts, description: c.description, location: c.location, docs, photoCount: 6, timeline,
+        estimateF: czk(c.estimate), payoutF: c.payout > 0 ? czk(c.payout) : '—', paid: c.payout > 0, progress: c.progress,
+        plate: v.plate, brand: v.brand, model: v.model,
+        goVehicle: () => openVehicle(c.vId), goBack: () => navigate('claims'),
+        reportClaim: null,
+      },
+    }
+  }
+
   const wizardVM = () => {
     if (!state.claimWizard) return {}
     const step = state.claimStep; const done = step > 6
@@ -864,7 +925,7 @@ export default function FleetPortal() {
 
   const vm = {
     ...shellVM(), ...dashboardVM(), ...fleetsVM(), ...fleetDetailVM(), ...vehiclesVM(), ...vehicleDetailVM(),
-    ...insuranceVM(), ...claimsVM(), ...documentsVM(), ...documentsDetailVM(), ...analyticsVM(), ...contactsVM(), ...settingsVM(), ...bonifikaceVM(), ...bonifikaceDetailVM(), ...wizardVM(), ...addVehicleVM(),
+    ...insuranceVM(), ...claimsVM(), ...claimDetailVM(), ...documentsVM(), ...documentsDetailVM(), ...analyticsVM(), ...contactsVM(), ...settingsVM(), ...bonifikaceVM(), ...bonifikaceDetailVM(), ...wizardVM(), ...addVehicleVM(),
   }
 
   return <Render vm={vm} />
