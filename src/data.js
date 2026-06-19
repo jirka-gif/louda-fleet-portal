@@ -69,12 +69,14 @@ export const vehiclesData = [
 vehiclesData.forEach((v, i) => { v.prihlaska = `PŘ-${v.year}/${String(118 + i * 13).padStart(4, '0')}` })
 
 export const claimsData = [
-  { id: 'CLM-2026-0142', vehicle: 'Škoda Octavia · 5SK 8841', vId: 'v1', type: 'Havárie – křižovatka', status: 'repair', insurer: 'Kooperativa', estimate: 84000, date: '28. 5. 2026', shop: 'AutoCentrum Praha', adjuster: 'Pavel Říha', progress: 60 },
-  { id: 'CLM-2026-0138', vehicle: 'Tesla Model 3 · 1EV 9087', vId: 'v7', type: 'Sklo – čelní', status: 'approved', insurer: 'ČPP', estimate: 12400, date: '12. 5. 2026', shop: 'AutoSklo Express', adjuster: 'Eva Horká', progress: 100 },
-  { id: 'CLM-2026-0131', vehicle: 'BMW 320d · 2BM 5567', vId: 'v5', type: 'Parkovací škoda', status: 'reported', insurer: 'UNIQA', estimate: 31500, date: '2. 6. 2026', shop: '—', adjuster: 'Nepřiřazen', progress: 10 },
-  { id: 'CLM-2026-0125', vehicle: 'VW Transporter · 4VW 8800', vId: 'v10', type: 'Krupobití', status: 'closed', insurer: 'ČSOB', estimate: 47800, date: '18. 4. 2026', shop: 'Servis MB Brno', adjuster: 'Jiří Malý', progress: 100 },
-  { id: 'CLM-2026-0119', vehicle: 'Audi A6 · 8EX 7733', vId: 'v4', type: 'Odcizení kol', status: 'liquidation', insurer: 'Generali', estimate: 58000, date: '30. 5. 2026', shop: '—', adjuster: 'Petra Nová', progress: 40 },
-  { id: 'CLM-2026-0112', vehicle: 'Hyundai Tucson · 6HY 3320', vId: 'v9', type: 'Střet se zvěří', status: 'closed', insurer: 'Generali', estimate: 26300, date: '22. 3. 2026', shop: 'AutoCentrum Brno', adjuster: 'Pavel Říha', progress: 100 },
+  { id: 'CLM-2026-0142', vehicle: 'Škoda Octavia · 5SK 8841', vId: 'v1', type: 'Havárie – křižovatka', risk: 'HAV', reportedBy: 'Petr Novák', status: 'repair', insurer: 'Kooperativa', estimate: 84000, payout: 0, date: '28. 5. 2026', shop: 'AutoCentrum Praha', adjuster: 'Pavel Říha', progress: 60 },
+  { id: 'CLM-2026-0138', vehicle: 'Tesla Model 3 · 1EV 9087', vId: 'v7', type: 'Sklo – čelní', risk: 'Skla', reportedBy: 'Petr Novák', status: 'approved', insurer: 'ČPP', estimate: 12400, payout: 11400, date: '12. 5. 2026', shop: 'AutoSklo Express', adjuster: 'Eva Horká', progress: 100 },
+  { id: 'CLM-2026-0131', vehicle: 'BMW 320d · 2BM 5567', vId: 'v5', type: 'Parkovací škoda', risk: 'POV', reportedBy: 'Martin Horák', status: 'reported', insurer: 'UNIQA', estimate: 31500, payout: 0, date: '2. 6. 2026', shop: '—', adjuster: 'Nepřiřazen', progress: 10 },
+  { id: 'CLM-2026-0125', vehicle: 'VW Transporter · 4VW 8800', vId: 'v10', type: 'Krupobití', risk: 'HAV', reportedBy: 'Martin Horák', status: 'closed', insurer: 'ČSOB', estimate: 47800, payout: 42800, date: '18. 4. 2026', shop: 'Servis MB Brno', adjuster: 'Jiří Malý', progress: 100 },
+  { id: 'CLM-2026-0119', vehicle: 'Audi A6 · 8EX 7733', vId: 'v4', type: 'Odcizení kol', risk: 'HAV', reportedBy: 'Jan Kučera', status: 'liquidation', insurer: 'Generali', estimate: 58000, payout: 0, date: '30. 5. 2026', shop: '—', adjuster: 'Petra Nová', progress: 40 },
+  { id: 'CLM-2026-0112', vehicle: 'Hyundai Tucson · 6HY 3320', vId: 'v9', type: 'Střet se zvěří', risk: 'HAV', reportedBy: 'Tomáš Svoboda', status: 'closed', insurer: 'Generali', estimate: 26300, payout: 21300, date: '22. 3. 2026', shop: 'AutoCentrum Brno', adjuster: 'Pavel Říha', progress: 100 },
+  { id: 'CLM-2026-0151', vehicle: 'VW Passat · 4AU 1290', vId: 'v3', type: 'Škoda způsobená třetí osobě', risk: 'POV', reportedBy: 'Tomáš Svoboda', status: 'liquidation', insurer: 'Kooperativa', estimate: 56000, payout: 0, date: '8. 6. 2026', shop: '—', adjuster: 'Petra Nová', progress: 30 },
+  { id: 'CLM-2026-0147', vehicle: 'Mercedes E 220d · 9ME 2201', vId: 'v6', type: 'Sklo – boční', risk: 'Skla', reportedBy: 'Lucie Marešová', status: 'approved', insurer: 'Allianz', estimate: 8600, payout: 7600, date: '5. 6. 2026', shop: 'AutoSklo Express', adjuster: 'Eva Horká', progress: 100 },
 ]
 
 export const statusMeta = {

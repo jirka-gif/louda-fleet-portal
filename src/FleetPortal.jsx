@@ -546,7 +546,21 @@ export default function FleetPortal() {
     const claimsByFleet = cf.map(([name, count, color]) => ({ name, count, color, w: Math.round(count / cfMax * 100) + '%' }))
     const ct = [5, 4, 6, 3, 5, 4, 7, 4, 6, 3, 4, 2]; const ctMax = Math.max(...ct)
     const claimTrend = ct.map((v, i) => ({ h: Math.round(v / ctMax * 100) + '%', color: i >= 10 ? 'var(--star)' : '#E3B7BE', label: MONTHS[i][0] }))
-    const claimRows = claimsData.map((c) => { const cm = claimStatusMeta[c.status]; return { ...c, estimateF: czk(c.estimate), statusLabel: cm.label, bg: cm.bg, color: cm.c, chipStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:${cm.c};background:${cm.bg};padding:3px 9px;border-radius:20px;white-space:nowrap`, onClick: () => openVehicle(c.vId) } })
+    const riskMeta = { POV: { bg: 'var(--blue-soft)', c: 'var(--blue-ink)' }, HAV: { bg: 'var(--star-soft)', c: 'var(--star-ink)' }, Skla: { bg: '#E3F4F5', c: '#0E7C86' } }
+    const claimRows = claimsData.map((c) => {
+      const cm = claimStatusMeta[c.status]
+      const v = vehiclesData.find((x) => x.id === c.vId) || {}
+      const rm = riskMeta[c.risk] || { bg: '#F1F1F3', c: 'var(--ink2)' }
+      return {
+        id: c.id, type: c.type, risk: c.risk, reportedBy: c.reportedBy, date: c.date, insurer: c.insurer,
+        plate: v.plate || '—', vin: v.vin || '—', brand: v.brand || '', model: v.model || '',
+        estimateF: czk(c.estimate), paid: c.payout > 0, payoutF: c.payout > 0 ? czk(c.payout) : '—',
+        statusLabel: cm.label, bg: cm.bg, color: cm.c,
+        chipStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:${cm.c};background:${cm.bg};padding:3px 9px;border-radius:20px;white-space:nowrap`,
+        riskStyle: `display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:${rm.c};background:${rm.bg};padding:3px 9px;border-radius:6px;white-space:nowrap`,
+        onClick: () => openVehicle(c.vId),
+      }
+    })
     return { claimStats, claimsByFleet, claimTrend, claimRows }
   }
 
