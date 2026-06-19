@@ -1,9 +1,35 @@
-import React from 'react'
-import { css as S, Hov, Icon, InsurerLogo } from './helpers.jsx'
+import React, { useState } from 'react'
+import { css as S, Hov, Icon, InsurerLogo, exportData } from './helpers.jsx'
 
 const ic = (name, size = 18, sw = 1.8) => <Icon name={name} size={size} sw={sw} />
 const LOGO = '/fleet-portal/logo-louda.svg'
 const STAR_LOGO = '/fleet-portal/star-logo.png'
+
+// Export button with an XLS / CSV / PDF dropdown — exports the given rows.
+function ExportMenu({ filename, title, columns, rows, variant }) {
+  const [open, setOpen] = useState(false)
+  const fmts = [['xls', 'XLS (Excel)', 'banknote'], ['csv', 'CSV', 'doc2'], ['pdf', 'PDF', 'file']]
+  const run = (f) => { setOpen(false); exportData(f, { filename, title, columns, rows }) }
+  const btn = variant === 'header'
+    ? 'height:38px;padding:0 15px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer'
+    : 'display:flex;align-items:center;gap:7px;height:38px;padding:0 13px;border:1px solid var(--border);background:#fff;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer'
+  return (
+    <div style={{ position: 'relative' }}>
+      <Hov onClick={() => setOpen((o) => !o)} base={btn} hover="background:#FAFAFA">{ic('doc2', 16)} Export <span style={S('display:flex;color:var(--ink3)')}>{ic('chevron', 15)}</span></Hov>
+      {open && (
+        <>
+          <div onClick={() => setOpen(false)} style={S('position:fixed;inset:0;z-index:40')}></div>
+          <div style={S('position:absolute;right:0;top:44px;z-index:41;width:196px;background:#fff;border:1px solid var(--border2);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.16);padding:6px;animation:popIn .12s ease')}>
+            <div style={S('font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;padding:6px 9px 5px')}>Exportovat {rows.length} záznamů</div>
+            {fmts.map((f, i) => (
+              <Hov key={i} onClick={() => run(f[0])} base="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer" hover="background:#F5F7FB"><span style={S('display:flex;color:var(--blue)')}>{ic(f[2], 16)}</span> {f[1]}</Hov>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 // Horizontal-scroll wrapper for dense data tables on narrow screens.
 function HScroll({ minW, children }) {
@@ -878,7 +904,7 @@ function FleetDetail({ vm }) {
             </div>
           </div>
           <div style={S('display:flex;gap:8px')}>
-            <div style={S('height:38px;padding:0 15px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer')}>{ic('doc2', 16)} Export</div>
+            <ExportMenu {...fd.export} variant="header" />
             <Hov onClick={vm.openAddVehicle} base="height:38px;padding:0 15px;background:var(--blue);color:#fff;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;cursor:pointer" hover="background:#1A47A3">{ic('plus', 15)} Přidat vozidlo do flotily</Hov>
           </div>
         </div>
@@ -1104,7 +1130,7 @@ function Vehicles({ vm }) {
           </select>
         ))}
         <div style={{ flex: 1 }}></div>
-        <div style={S('display:flex;align-items:center;gap:7px;height:38px;padding:0 13px;border:1px solid var(--border);background:#fff;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer')}>{ic('doc2', 16)} Export</div>
+        <ExportMenu {...vm.vehiclesExport} />
         <Hov onClick={vm.openAddVehicle} base="display:flex;align-items:center;gap:7px;height:38px;padding:0 14px;background:var(--blue);color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer" hover="background:#1A47A3">{ic('plus', 15)} Přidat vozidlo</Hov>
       </div>
 

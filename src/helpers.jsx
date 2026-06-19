@@ -180,3 +180,44 @@ export function linePath(vals, w, h, pad) {
   const area = line + ` L${(w - pad).toFixed(1)} ${(h - pad).toFixed(1)} L${pad} ${(h - pad).toFixed(1)} Z`
   return { line, area }
 }
+
+// ---------------------------------------------------------------------------
+// Export — CSV / XLS / PDF of a tabular dataset (columns + rows).
+// Runs entirely client-side and triggers a real download (PDF via print).
+// ---------------------------------------------------------------------------
+const escHtml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+function toDelimited(columns, rows, sep) {
+  const re = new RegExp('["' + sep + '\\n]')
+  const esc = (v) => { const s = String(v ?? ''); return re.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s }
+  return [columns.map((c) => esc(c.label)).join(sep), ...rows.map((r) => columns.map((c) => esc(r[c.key])).join(sep))].join('\r\n')
+}
+
+function downloadFile(name, content, mime) {
+  const blob = new Blob([content], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+function xlsHtml(title, columns, rows) {
+  const th = columns.map((c) => `<th style="background:#f0f0f0;border:1px solid #999;padding:5px 9px;text-align:left;font-family:sans-serif;font-size:11px">${escHtml(c.label)}</th>`).join('')
+  const trs = rows.map((r) => '<tr>' + columns.map((c) => `<td style="border:1px solid #ccc;padding:5px 9px;font-family:sans-serif;font-size:11px">${escHtml(r[c.key])}</td>`).join('') + '</tr>').join('')
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${escHtml(title)}</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>${'<tr>' + th + '</tr>'}${trs}</table></body></html>`
+}
+
+function printRows(title, columns, rows) {
+  const th = columns.map((c) => `<th>${escHtml(c.label)}</th>`).join('')
+  const trs = rows.map((r) => '<tr>' + columns.map((c) => `<td>${escHtml(r[c.key])}</td>`).join('') + '</tr>').join('')
+  const html = `<!doctype html><html lang="cs"><head><meta charset="utf-8"><title>${escHtml(title)}</title><style>body{font-family:-apple-system,system-ui,sans-serif;color:#111;margin:28px}h1{font-size:18px;margin:0 0 3px}.sub{color:#666;font-size:12px;margin-bottom:18px}table{border-collapse:collapse;width:100%;font-size:11px}th,td{border:1px solid #d0d0d0;padding:6px 8px;text-align:left}th{background:#f3f3f3}@media print{@page{size:landscape;margin:14mm}}</style></head><body><h1>${escHtml(title)}</h1><div class="sub">Louda Auto Fleet Portal · ${rows.length} záznamů</div><table><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table><script>window.onload=function(){setTimeout(function(){window.print()},250)}</script></body></html>`
+  const w = window.open('', '_blank')
+  if (w) { w.document.write(html); w.document.close() }
+}
+
+export function exportData(format, { filename, title, columns, rows }) {
+  if (!rows || !rows.length) return
+  if (format === 'csv') downloadFile(filename + '.csv', '﻿' + toDelimited(columns, rows, ';'), 'text/csv;charset=utf-8')
+  else if (format === 'xls') downloadFile(filename + '.xls', xlsHtml(title, columns, rows), 'application/vnd.ms-excel;charset=utf-8')
+  else if (format === 'pdf') printRows(title, columns, rows)
+}

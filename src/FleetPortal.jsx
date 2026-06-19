@@ -400,6 +400,12 @@ export default function FleetPortal() {
         name: f.name, manager: f.manager, policy: f.policy || '—', policyStart: f.policyStart || '—', stats, summary, line: lp.line, area: lp.area, donut, insurerLegend, fuel, evPct, evDonut, claimBars, claims: f.claims,
         vehicles: fleetVehicles, vehicleCount: fleetVehicles.length, goVehiclesTab: () => setState({ fleetTab: 'vehicles' }),
         endedVehicles: fleetEnded, endedCount: fleetEnded.length,
+        export: {
+          filename: `vozidla-${f.name.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}`,
+          title: `Vozidla – ${f.name}`,
+          columns: [{ key: 'plate', label: 'SPZ' }, { key: 'znacka', label: 'Značka' }, { key: 'model', label: 'Model' }, { key: 'driver', label: 'Řidič' }, { key: 'year', label: 'Rok' }, { key: 'fuel', label: 'Palivo' }, { key: 'vin', label: 'VIN' }, { key: 'insurer', label: 'Pojišťovna' }, { key: 'premium', label: 'Roční pojistné' }, { key: 'stav', label: 'Stav' }],
+          rows: fleetVehicles.map((v) => ({ plate: v.plate, znacka: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel, vin: v.vin, insurer: v.insurer, premium: v.premiumF, stav: v.statusLabel })),
+        },
         parkInsurers, insurersTotalF, insurersCount: parkInsurers.length,
         riskRows, riskTotalF, riskCount: riskRows.length, activeCount: pv.length,
         parkClaims: claimsData.filter((c) => { const cv = vehiclesData.find((x) => x.id === c.vId); return cv && cv.fleet === f.id }).map(buildClaimRow),
@@ -459,7 +465,15 @@ export default function FleetPortal() {
         unsubscribe: (e) => { e.stopPropagation(); openUnsub(v) },
       }
     })
-    return { vFilters, vfQuery: vf.q, onVfQuery: (e) => setVf('q', e.target.value), vehicleRows, endedRows, endedCount: endedRows.length, vSelCount: Object.keys(sel).length, clearSel: () => setState({ selected: {} }) }
+    const exportCols = [
+      { key: 'plate', label: 'SPZ' }, { key: 'znacka', label: 'Značka' }, { key: 'model', label: 'Model' }, { key: 'driver', label: 'Řidič' },
+      { key: 'year', label: 'Rok' }, { key: 'fuel', label: 'Palivo' }, { key: 'vin', label: 'VIN' }, { key: 'prihlaska', label: 'Číslo přihlášky' },
+      { key: 'park', label: 'Park' }, { key: 'insurer', label: 'Pojišťovna' }, { key: 'premium', label: 'Roční pojistné' }, { key: 'renewal', label: 'Obnova' }, { key: 'stav', label: 'Stav' },
+    ]
+    const exportSrc = Object.keys(sel).length ? vehicleRows.filter((v) => sel[v.id]) : vehicleRows
+    const exportRows = exportSrc.map((v) => ({ plate: v.plate, znacka: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel, vin: v.vin, prihlaska: v.prihlaska, park: v.fleetName, insurer: v.insurer, premium: v.premiumF, renewal: v.renewal, stav: v.statusLabel }))
+
+    return { vFilters, vfQuery: vf.q, onVfQuery: (e) => setVf('q', e.target.value), vehicleRows, endedRows, endedCount: endedRows.length, vSelCount: Object.keys(sel).length, clearSel: () => setState({ selected: {} }), vehiclesExport: { filename: 'vozidla', title: 'Vozidla', columns: exportCols, rows: exportRows } }
   }
 
   const vehicleDetailVM = () => {
