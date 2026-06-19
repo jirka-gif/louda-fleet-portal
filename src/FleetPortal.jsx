@@ -373,15 +373,20 @@ export default function FleetPortal() {
       { value: vf.status, onChange: (e) => setVf('status', e.target.value), options: [{ v: 'all', l: 'Stav' }, { v: 'active', l: 'Aktivní' }, { v: 'soon', l: 'Brzy obnova' }, { v: 'overdue', l: 'Po splatnosti' }, { v: 'nocasco', l: 'Bez havarijního' }] },
     ]
     const q = vf.q.toLowerCase()
-    const rows = vehiclesData.filter((v) => {
+    const matchBase = (v) => {
       if (vf.fleet !== 'all' && v.fleet !== vf.fleet) return false
       if (vf.brand !== 'all' && v.brand !== vf.brand) return false
       if (vf.fuel !== 'all' && v.fuel !== vf.fuel) return false
       if (vf.insurer !== 'all' && v.insurer !== vf.insurer) return false
-      if (vf.status !== 'all' && v.status !== vf.status) return false
       if (q && !`${v.plate} ${v.brand} ${v.model} ${v.driver}`.toLowerCase().includes(q)) return false
       return true
-    })
+    }
+    const rows = vehiclesData.filter((v) => v.status !== 'ended' && matchBase(v) && (vf.status === 'all' || v.status === vf.status))
+    const endedRows = vehiclesData.filter((v) => v.status === 'ended' && matchBase(v)).map((v) => ({
+      id: v.id, plate: v.plate, brand: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel,
+      fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), endedDate: v.endedDate, endReason: v.endReason,
+      statusLabel: statusMeta[v.status].label, chipStyle: statusChip(v.status), onClick: () => openVehicle(v.id),
+    }))
     const sel = state.selected
     const open = state.rowMenu
     const vehicleRows = rows.map((v) => {
@@ -405,7 +410,7 @@ export default function FleetPortal() {
         unsubscribe: (e) => { e.stopPropagation(); openUnsub(v) },
       }
     })
-    return { vFilters, vfQuery: vf.q, onVfQuery: (e) => setVf('q', e.target.value), vehicleRows, vSelCount: Object.keys(sel).length, clearSel: () => setState({ selected: {} }) }
+    return { vFilters, vfQuery: vf.q, onVfQuery: (e) => setVf('q', e.target.value), vehicleRows, endedRows, endedCount: endedRows.length, vSelCount: Object.keys(sel).length, clearSel: () => setState({ selected: {} }) }
   }
 
   const vehicleDetailVM = () => {

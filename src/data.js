@@ -58,6 +58,11 @@ export const vehiclesData = [
   { id: 'v14', plate: '8TY 3398', brand: 'Toyota', model: 'Corolla TS Hybrid', year: 2022, driver: 'Jana Dvořáková', fleet: 'f2', insurer: 'ČPP', status: 'active', premium: 15800, renewal: '4. 9. 2026', fuel: 'Hybrid', vin: 'SB1KW3JE10E223311', mileage: '51 900 km', value: '520 000 Kč' },
   { id: 'v15', plate: '1IX 5520', brand: 'BMW', model: 'iX3 M Sport', year: 2024, driver: 'Jan Kučera', fleet: 'f6', insurer: 'Allianz', status: 'active', premium: 35600, renewal: '14. 1. 2027', fuel: 'Elektro', vin: 'WBAEW5104P9554477', mileage: '18 300 km', value: '1 340 000 Kč' },
   { id: 'v16', plate: '9OC 2284', brand: 'Škoda', model: 'Octavia 1.5 TSI', year: 2020, driver: 'Tomáš Svoboda', fleet: 'f3', insurer: 'Kooperativa', status: 'nocasco', premium: 13900, renewal: '22. 7. 2026', fuel: 'Benzín', vin: 'TMBAG7NE0L0998822', mileage: '104 200 km', value: '320 000 Kč' },
+  // Ukončená vozidla (odhlášená z pojištění)
+  { id: 'v17', plate: '3FA 1180', brand: 'Škoda', model: 'Fabia 1.0 TSI', year: 2019, driver: 'Petr Novák', fleet: 'f3', insurer: 'Generali', status: 'ended', premium: 11200, renewal: '—', fuel: 'Benzín', vin: 'TMBER6NW9K0334411', mileage: '132 800 km', value: '180 000 Kč', endedDate: '12. 5. 2026', endReason: 'Prodej vozidla' },
+  { id: 'v18', plate: '1AB 2030', brand: 'Volkswagen', model: 'Golf 1.6 TDI', year: 2018, driver: 'Petr Novák', fleet: 'f1', insurer: 'Kooperativa', status: 'ended', premium: 13400, renewal: '—', fuel: 'Diesel', vin: 'WVWZZZ1KZJW556677', mileage: '168 400 km', value: '150 000 Kč', endedDate: '28. 4. 2026', endReason: 'Vyřazení z provozu' },
+  { id: 'v19', plate: '9KL 4477', brand: 'Ford', model: 'Transit Custom', year: 2017, driver: 'Martin Horák', fleet: 'f4', insurer: 'ČSOB', status: 'ended', premium: 18900, renewal: '—', fuel: 'Diesel', vin: 'WF0YXXTTGYHA12345', mileage: '214 000 km', value: '160 000 Kč', endedDate: '3. 3. 2026', endReason: 'Totální škoda' },
+  { id: 'v20', plate: '6OP 8812', brand: 'Audi', model: 'A4 Avant 2.0 TDI', year: 2018, driver: 'Jan Kučera', fleet: 'f6', insurer: 'Generali', status: 'ended', premium: 22100, renewal: '—', fuel: 'Diesel', vin: 'WAUZZZ8K9JA778899', mileage: '196 500 km', value: '320 000 Kč', endedDate: '19. 2. 2026', endReason: 'Ukončení leasingu' },
 ]
 
 // Číslo přihlášky vozidla do flotilové smlouvy (registration into the fleet policy)
@@ -77,6 +82,7 @@ export const statusMeta = {
   soon: { label: 'Brzy obnova', c: '#C2780C', bg: '#FBF1DF' },
   overdue: { label: 'Po splatnosti', c: '#C8102E', bg: '#FDECEE' },
   nocasco: { label: 'Bez havarijního', c: '#2058C9', bg: '#EAF0FC' },
+  ended: { label: 'Ukončeno', c: '#5B5B63', bg: '#F1F1F3' },
 }
 
 export const claimStatusMeta = {
