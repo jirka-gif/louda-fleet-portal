@@ -881,6 +881,42 @@ function FleetDetail({ vm }) {
         </div>
       )}
 
+      {fd.isInsurers && (
+        <div>
+          <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:14px')}>
+            <div style={S('background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px')}><div style={S('font-size:12px;color:var(--ink3)')}>Pojistitelé na parku</div><div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:5px')}>{fd.insurersCount}</div></div>
+            <div style={S('background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px')}><div style={S('font-size:12px;color:var(--ink3)')}>Objem pojistného celkem</div><div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:5px')}>{fd.insurersTotalF}</div></div>
+          </div>
+          <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+            <HScroll minW={720}>
+              <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+                <div style={S('width:40px;flex-shrink:0')}></div>
+                <div style={S('flex:1;min-width:0')}>Pojistitel</div>
+                <div style={S('width:160px')}>Číslo pojistné smlouvy</div>
+                <div style={S('width:90px;text-align:right')}>Vozidla</div>
+                <div style={S('width:150px;text-align:right')}>Objem pojistného</div>
+              </div>
+              {fd.parkInsurers.map((p, i) => (
+                <div key={i} style={S('display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border)')}>
+                  <InsurerLogo name={p.name} size={40} />
+                  <div style={S('flex:1;min-width:0;font-size:14px;font-weight:700')}>{p.name}</div>
+                  <div style={S('width:160px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{p.policy}</div>
+                  <div style={S('width:90px;text-align:right;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{p.count}</div>
+                  <div style={S('width:150px;text-align:right;font-weight:800;font-size:14px;letter-spacing:-.3px;font-variant-numeric:tabular-nums')}>{p.premiumF}</div>
+                </div>
+              ))}
+              <div style={S('display:flex;align-items:center;gap:14px;padding:13px 18px;background:#FBFBFC')}>
+                <div style={S('width:40px;flex-shrink:0')}></div>
+                <div style={S('flex:1;min-width:0;font-size:12.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>Celkem</div>
+                <div style={S('width:160px')}></div>
+                <div style={S('width:90px')}></div>
+                <div style={S('width:150px;text-align:right;font-weight:800;font-size:14px;letter-spacing:-.3px;font-variant-numeric:tabular-nums')}>{fd.insurersTotalF}</div>
+              </div>
+            </HScroll>
+          </div>
+        </div>
+      )}
+
       {fd.isOther && (
         <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:48px;text-align:center;color:var(--ink3)')}>
           <div style={S('width:52px;height:52px;border-radius:13px;background:#F4F4F5;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--ink3)')}>{fd.otherIcon}</div>
