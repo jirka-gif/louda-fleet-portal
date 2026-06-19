@@ -20,6 +20,12 @@ const INS_COLORS = { Kooperativa: '#2058C9', Allianz: '#16A34A', 'ČPP': '#C2780
 const DEFAULT_BONUS = [{ threshold: 30, rate: 15 }, { threshold: 40, rate: 10 }, { threshold: 50, rate: 5 }]
 const INSURER_CODE = { Kooperativa: '7720', Allianz: '4055', 'ČPP': '0019', Generali: '5544', UNIQA: '2401', 'ČSOB': '8830', 'ČSOB Poj.': '8830' }
 const RISK_META = { POV: { bg: 'var(--blue-soft)', c: 'var(--blue-ink)' }, HAV: { bg: 'var(--star-soft)', c: 'var(--star-ink)' }, Skla: { bg: '#E3F4F5', c: '#0E7C86' } }
+const CLAIM_EXPORT_COLS = [
+  { key: 'id', label: 'Číslo škody' }, { key: 'spz', label: 'SPZ' }, { key: 'vin', label: 'VIN' }, { key: 'vozidlo', label: 'Vozidlo' },
+  { key: 'riziko', label: 'Riziko' }, { key: 'nahlasil', label: 'Nahlásil' }, { key: 'nahlaseno', label: 'Nahlášeno' }, { key: 'typ', label: 'Typ události' },
+  { key: 'vyse', label: 'Výše škody' }, { key: 'stav', label: 'Stav' }, { key: 'vyplaceno', label: 'Vyplaceno' },
+]
+const claimExportRow = (c) => ({ id: c.id, spz: c.plate, vin: c.vin, vozidlo: `${c.brand} ${c.model}`, riziko: c.risk, nahlasil: c.reportedBy, nahlaseno: c.date, typ: c.type, vyse: c.estimateF, stav: c.statusLabel, vyplaceno: c.payoutF })
 // Sjednatelná rizika — podíl na pojistném a pravidlo sjednání na vozidlo (deterministicky)
 const RISKS = [
   { key: 'pr', label: 'Povinné ručení', icon: 'shield', frac: 0.34, bg: 'var(--star-soft)', color: 'var(--star)', has: () => true },
@@ -314,7 +320,12 @@ export default function FleetPortal() {
       renewals: f.renewals, renewalsShow: f.renewals > 0, insurers: f.insurers,
       onClick: () => openFleet(f.id),
     }))
-    return { fleetCards, fleetsView: state.fleetsView, setFleetsView: (v) => setState({ fleetsView: v }) }
+    const fleetsExport = {
+      filename: 'vozove-parky', title: 'Vozové parky',
+      columns: [{ key: 'park', label: 'Vozový park' }, { key: 'manager', label: 'Fleet manager' }, { key: 'vozidla', label: 'Vozidla' }, { key: 'premium', label: 'Roční pojistné' }, { key: 'claims', label: 'Události (rok)' }, { key: 'risk', label: 'Rizikové skóre' }, { key: 'pojistovny', label: 'Pojišťovny' }, { key: 'obnovy', label: 'Obnovy do 30 dnů' }],
+      rows: fleetCards.map((f) => ({ park: f.name, manager: f.manager, vozidla: f.vehicles, premium: f.premium, claims: f.claims, risk: f.risk + '/100', pojistovny: f.insurers.join(', '), obnovy: f.renewals })),
+    }
+    return { fleetCards, fleetsView: state.fleetsView, setFleetsView: (v) => setState({ fleetsView: v }), fleetsExport }
   }
 
   const fleetDetailVM = () => {
@@ -386,6 +397,7 @@ export default function FleetPortal() {
       return { label: r.label, icon: ic(r.icon, 18), bg: r.bg, color: r.color, count, coverage: pv.length ? Math.round(count / pv.length * 100) : 0, premium, premiumF: czk(premium) }
     }).filter((r) => r.count > 0)
     const riskTotalF = czk(riskRows.reduce((a, b) => a + b.premium, 0))
+    const fleetClaims = claimsData.filter((c) => { const cv = vehiclesData.find((x) => x.id === c.vId); return cv && cv.fleet === f.id }).map(buildClaimRow)
 
     const otherMap = {
       insurance: ['Pojištění parku', 'Souhrn všech smluv a krytí v tomto parku — přejděte do modulu Pojištění pro detailní práci se smlouvami.', ic('shield', 24)],
@@ -400,6 +412,9 @@ export default function FleetPortal() {
         name: f.name, manager: f.manager, policy: f.policy || '—', policyStart: f.policyStart || '—', stats, summary, line: lp.line, area: lp.area, donut, insurerLegend, fuel, evPct, evDonut, claimBars, claims: f.claims,
         vehicles: fleetVehicles, vehicleCount: fleetVehicles.length, goVehiclesTab: () => setState({ fleetTab: 'vehicles' }),
         endedVehicles: fleetEnded, endedCount: fleetEnded.length,
+        insurersExport: { filename: `pojistitele-${f.id}`, title: `Pojistitelé – ${f.name}`, columns: [{ key: 'pojistitel', label: 'Pojistitel' }, { key: 'smlouva', label: 'Číslo pojistné smlouvy' }, { key: 'vozidla', label: 'Vozidla' }, { key: 'objem', label: 'Objem pojistného' }], rows: parkInsurers.map((p) => ({ pojistitel: p.name, smlouva: p.policy, vozidla: p.count, objem: p.premiumF })) },
+        risksExport: { filename: `rizika-${f.id}`, title: `Pojištění – rizika – ${f.name}`, columns: [{ key: 'riziko', label: 'Riziko' }, { key: 'vozidla', label: 'Vozidla' }, { key: 'pokryti', label: 'Pokrytí' }, { key: 'objem', label: 'Objem pojistného' }], rows: riskRows.map((r) => ({ riziko: r.label, vozidla: r.count, pokryti: r.coverage + ' %', objem: r.premiumF })) },
+        claimsExport: { filename: `skody-${f.id}`, title: `Škody – ${f.name}`, columns: CLAIM_EXPORT_COLS, rows: fleetClaims.map(claimExportRow) },
         export: {
           filename: `vozidla-${f.name.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase()}`,
           title: `Vozidla – ${f.name}`,
@@ -408,7 +423,7 @@ export default function FleetPortal() {
         },
         parkInsurers, insurersTotalF, insurersCount: parkInsurers.length,
         riskRows, riskTotalF, riskCount: riskRows.length, activeCount: pv.length,
-        parkClaims: claimsData.filter((c) => { const cv = vehiclesData.find((x) => x.id === c.vId); return cv && cv.fleet === f.id }).map(buildClaimRow),
+        parkClaims: fleetClaims,
         isOverview: tab === 'overview', isVehicles: tab === 'vehicles', isInsurers: tab === 'insurers', isInsurance: tab === 'insurance', isClaims: tab === 'claims', isOther: !['overview', 'vehicles', 'insurers', 'insurance', 'claims'].includes(tab),
         otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],
       },
@@ -563,7 +578,12 @@ export default function FleetPortal() {
       name: f.name, color: ['#2058C9', '#16A34A', '#C2780C'][i], count: Math.round(f.vehicles * 3.7), premium: (f.premium / 1000000).toFixed(2).replace('.', ',') + ' mil. Kč',
       rows: prods.map((p) => ({ ...p, bg: 'var(--star-soft)', color: 'var(--star)', icon: pIcon(p.product), statusLabel: statusMeta[p.status].label, chipStyle: statusChip(p.status) })).slice(0, 3),
     }))
-    return { insStats, insGroupTabs, insGroups: groupsByFleet }
+    const insExport = {
+      filename: 'pojisteni-smlouvy', title: 'Pojištění – smlouvy',
+      columns: [{ key: 'park', label: 'Park' }, { key: 'produkt', label: 'Produkt' }, { key: 'rozsah', label: 'Rozsah' }, { key: 'smlouva', label: 'Smlouva' }, { key: 'pojistovna', label: 'Pojišťovna' }, { key: 'pojistne', label: 'Pojistné' }, { key: 'obnova', label: 'Obnova' }, { key: 'stav', label: 'Stav' }],
+      rows: groupsByFleet.flatMap((g) => g.rows.map((r) => ({ park: g.name, produkt: r.product, rozsah: r.scope, smlouva: r.policy, pojistovna: r.insurer, pojistne: r.premiumF, obnova: r.renewal, stav: r.statusLabel }))),
+    }
+    return { insStats, insGroupTabs, insGroups: groupsByFleet, insExport }
   }
 
   const claimsVM = () => {
@@ -580,7 +600,8 @@ export default function FleetPortal() {
     const ct = [5, 4, 6, 3, 5, 4, 7, 4, 6, 3, 4, 2]; const ctMax = Math.max(...ct)
     const claimTrend = ct.map((v, i) => ({ h: Math.round(v / ctMax * 100) + '%', color: i >= 10 ? 'var(--star)' : '#E3B7BE', label: MONTHS[i][0] }))
     const claimRows = claimsData.map(buildClaimRow)
-    return { claimStats, claimsByFleet, claimTrend, claimRows }
+    const claimsExport = { filename: 'skody', title: 'Škody', columns: CLAIM_EXPORT_COLS, rows: claimRows.map(claimExportRow) }
+    return { claimStats, claimsByFleet, claimTrend, claimRows, claimsExport }
   }
 
   const documentsVM = () => {
@@ -671,7 +692,12 @@ export default function FleetPortal() {
       const totalDue = invoices.reduce((a, b) => a + b.amount, 0)
       const unpaid = invoices.filter((x) => !x.paid)
       const unpaidSum = unpaid.reduce((a, b) => a + b.amount, 0)
-      return { dd: { cat: 'faktury', invoices, count: invoices.length, totalF: czk(totalDue), unpaidCount: unpaid.length, unpaidF: czk(unpaidSum), goBack } }
+      const fakturyExport = {
+        filename: 'faktury', title: 'Faktury za pojištění',
+        columns: [{ key: 'num', label: 'Číslo faktury' }, { key: 'insurer', label: 'Pojišťovna' }, { key: 'policy', label: 'Číslo smlouvy' }, { key: 'amount', label: 'Předpis k úhradě' }, { key: 'issue', label: 'Vystaveno' }, { key: 'due', label: 'Splatnost' }, { key: 'paidDate', label: 'Uhrazeno' }, { key: 'status', label: 'Stav' }],
+        rows: invoices.map((iv) => ({ num: iv.num, insurer: iv.insurer, policy: iv.policy, amount: iv.amountF, issue: iv.issue, due: iv.due, paidDate: iv.paidDate, status: iv.statusLabel })),
+      }
+      return { dd: { cat: 'faktury', invoices, count: invoices.length, totalF: czk(totalDue), unpaidCount: unpaid.length, unpaidF: czk(unpaidSum), goBack, export: fakturyExport } }
     }
 
     const open = state.docOpen
@@ -764,7 +790,12 @@ export default function FleetPortal() {
         onClick: () => navigate('bonifikace-detail', { fleetId: f.id }),
       }
     })
-    return { bonifList }
+    const bonifExport = {
+      filename: 'bonifikace', title: 'Bonifikace',
+      columns: [{ key: 'pojistitel', label: 'Pojistitel' }, { key: 'smlouva', label: 'Číslo smlouvy' }, { key: 'skodni', label: 'Škodní průběh' }, { key: 'bonifikace', label: 'Bonifikace' }, { key: 'objem', label: 'Vrací se ročně' }],
+      rows: bonifList.map((b) => ({ pojistitel: b.insurer, smlouva: b.policy, skodni: b.lossRatio + ' %', bonifikace: b.rateActive ? b.rateLabel + ' z pojistného' : 'bez nároku', objem: b.rateActive ? b.rebateF : '—' })),
+    }
+    return { bonifList, bonifExport }
   }
 
   const bonifikaceDetailVM = () => {
