@@ -133,6 +133,57 @@ export default function Render({ vm }) {
       {vm.claimWizard && <ClaimWizard vm={vm} />}
       {vm.av && <AddVehicleWizard vm={vm} />}
       {vm.np && <NewFleetModal vm={vm} />}
+      {vm.docPreview && <DocPreviewModal vm={vm} />}
+    </div>
+  )
+}
+
+/* ============================ DOCUMENT PREVIEW MODAL ============================ */
+function DocPreviewModal({ vm }) {
+  const d = vm.docPreview
+  const headings = { Smlouva: 'Pojistná smlouva', IPID: 'Informační dokument o pojistném produktu', VPP: 'Všeobecné pojistné podmínky', Záznam: 'Záznam z jednání', Dodatek: 'Dodatek k pojistné smlouvě' }
+  const heading = headings[d.type] || d.type
+  const line = (w) => <div style={S(`height:9px;border-radius:4px;background:#ECECEE;width:${w}`)}></div>
+  const para = (ws) => <div style={S('display:flex;flex-direction:column;gap:8px')}>{ws.map((w, i) => <React.Fragment key={i}>{line(w)}</React.Fragment>)}</div>
+  return (
+    <div onClick={vm.closeDocPreview} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:760px;max-width:96vw;max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--star-soft);color:var(--star);display:flex;align-items:center;justify-content:center')}>{ic('doc2', 18)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}><div style={S('font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{d.type} · {d.size}</div></div>
+          <Hov as="span" base="display:flex;align-items:center;gap:6px;height:34px;padding:0 13px;border:1px solid var(--border2);border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('arrow', 15)} Stáhnout</Hov>
+          <span onClick={vm.closeDocPreview} style={S('color:var(--ink3);cursor:pointer;display:flex;margin-left:4px')}>{ic('close', 18)}</span>
+        </div>
+
+        {/* document viewer canvas */}
+        <div style={S('flex:1;overflow-y:auto;background:#F1F1F3;padding:24px')}>
+          <div style={S('max-width:600px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.08);padding:44px 48px;min-height:780px')}>
+            <div style={S('display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:30px')}>
+              <div>
+                <div style={S('font-size:16px;font-weight:800;letter-spacing:.5px;color:var(--star)')}>{d.insurer}</div>
+                <div style={S('font-size:11px;color:var(--ink3);margin-top:2px')}>Pojistitel</div>
+              </div>
+              <div style={S('text-align:right;font-size:11px;color:var(--ink3)')}>Strana 1 / 3<br />{d.date}</div>
+            </div>
+
+            <div style={S('font-size:21px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px')}>{heading}</div>
+            <div style={S('font-size:13px;color:var(--ink2);margin-bottom:26px')}>č. <span style={S('font-weight:700;font-variant-numeric:tabular-nums')}>{d.policy}</span></div>
+
+            <div style={S('display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;padding:16px 18px;background:#FBFBFC;border:1px solid var(--border);border-radius:8px;margin-bottom:28px')}>
+              {[['Pojistník', 'Louda Auto a.s.'], ['Pojistitel', d.insurer], ['Vozový park', d.fleetName], ['Platnost od', d.date], ['Číslo smlouvy', d.policy], ['IČO pojistníka', '256 12 348']].map((r, i) => (
+                <div key={i}><div style={S('font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px')}>{r[0]}</div><div style={S('font-size:13px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums')}>{r[1]}</div></div>
+              ))}
+            </div>
+
+            <div style={S('font-size:13.5px;font-weight:700;margin-bottom:12px')}>Článek I — Předmět pojištění</div>
+            <div style={S('margin-bottom:24px')}>{para(['100%', '96%', '100%', '88%', '92%'])}</div>
+            <div style={S('font-size:13.5px;font-weight:700;margin-bottom:12px')}>Článek II — Rozsah pojistného krytí</div>
+            <div style={S('margin-bottom:24px')}>{para(['100%', '94%', '100%', '78%'])}</div>
+            <div style={S('font-size:13.5px;font-weight:700;margin-bottom:12px')}>Článek III — Pojistné a jeho splatnost</div>
+            <div>{para(['100%', '90%', '100%', '85%', '60%'])}</div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -944,7 +995,7 @@ function DocumentsDetail({ vm }) {
                       <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{d.name}</div><div style={S('font-size:11.5px;color:var(--ink3)')}>{d.type}</div></div>
                       <div style={S('width:90px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{d.date}</div>
                       <div style={S('width:60px;font-size:12px;color:var(--ink3)')}>{d.size}</div>
-                      <div style={S('display:flex;gap:10px;color:var(--ink3)')}><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)">{d.preview}</Hov><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)">{d.download}</Hov></div>
+                      <div style={S('display:flex;gap:10px;color:var(--ink3)')}><Hov as="span" onClick={d.openPreview} base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Náhled">{d.preview}</Hov><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Stáhnout">{d.download}</Hov></div>
                     </Hov>
                   ))}
                 </HScroll>

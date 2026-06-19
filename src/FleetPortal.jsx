@@ -30,7 +30,7 @@ export default function FleetPortal() {
     rowMenu: null, toast: null,
     np: false, npData: { name: '', manager: '', insurer: 'Kooperativa', policy: '', start: '1. 7. 2026', vehicles: '' },
     newFleets: [],
-    docCat: null, docOpen: {},
+    docCat: null, docOpen: {}, docPreview: null,
     av: false, avStep: 1, avMethod: 'spz', avInput: '', avLoaded: false, avLoading: false, avFleet: 'f1',
     avCover: { pr: true, hav: true, skla: true, uraz: false, zavazadla: false, zver: true, nahradni: false, strojni: false, gap: false, zivel: false, asist: true, prac: false },
     avHavRozsah: 'allrisk', avHavSpoluucast: '5% / 5 000 Kč', avPrLimit: '100 / 100 mil. Kč', avUziti: 'Běžné užití',
@@ -195,6 +195,7 @@ export default function FleetPortal() {
       isInsurance: r === 'insurance', isClaims: r === 'claims', isDocuments: r === 'documents', isAnalytics: r === 'analytics', isContacts: r === 'contacts', isSettings: r === 'settings',
       isDocumentsDetail: r === 'documents-detail',
       openDocCat: (cat) => navigate('documents-detail', { docCat: cat, docOpen: {} }), goDocuments: () => navigate('documents'),
+      docPreview: state.docPreview, closeDocPreview: () => setState({ docPreview: null }),
       isBonifikace: r === 'bonifikace', isBonifikaceDetail: r === 'bonifikace-detail',
       openBonus: (id) => navigate('bonifikace-detail', { fleetId: id }), goBonifikace: () => navigate('bonifikace'),
       claimWizard: state.claimWizard, closeClaimWizard: () => setState({ claimWizard: false }),
@@ -526,7 +527,10 @@ export default function FleetPortal() {
         { name: 'Všeobecné pojistné podmínky.pdf', type: 'VPP', date: start, size: '1,4 MB', icon: ic('doc2', 17), bg: '#F1F1F3', color: 'var(--ink2)' },
         { name: 'Záznam z jednání.pdf', type: 'Záznam', date: start, size: '214 kB', icon: ic('doc2', 17), bg: 'var(--amber-soft)', color: 'var(--amber)' },
         { name: 'Dodatek č. 1 – aktualizace vozidel.pdf', type: 'Dodatek', date: start, size: '146 kB', icon: ic('file', 17), bg: 'var(--green-soft)', color: 'var(--green)' },
-      ].map((d) => ({ ...d, preview: ic('search', 16), download: ic('arrow', 16) }))
+      ].map((d) => ({
+        ...d, preview: ic('search', 16), download: ic('arrow', 16),
+        openPreview: () => setState({ docPreview: { name: d.name, type: d.type, date: d.date, size: d.size, insurer: f.insurers[0], policy: f.policy || '—', fleetName: f.name } }),
+      }))
       return {
         id: f.id, insurer: f.insurers[0], policy: f.policy || '—', fleetName: f.name, start,
         docCount: docs.length, docs, isOpen,
