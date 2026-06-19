@@ -1849,7 +1849,7 @@ function Documents({ vm }) {
       </div>
       <div style={S(`display:grid;grid-template-columns:repeat(${cols},1fr);gap:12px;margin-bottom:18px`)}>
         {vm.docFolders.map((f, i) => (
-          <Hov key={i} onClick={f.onClick} base="display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 15px;cursor:pointer" hover="border-color:#D4D4D8;background:#FAFAFA">
+          <Hov key={i} onClick={f.onClick} base="display:flex;align-items:center;gap:12px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 15px;cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease,background .15s ease" hover="border-color:var(--blue);background:#FAFBFF;box-shadow:0 4px 16px rgba(32,88,201,.12)">
             <div style={S(`width:42px;height:42px;border-radius:11px;background:${f.bg};color:${f.color};display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{f.icon}</div>
             <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap')}>{f.name}</div><div style={S('font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{f.count} souborů</div></div>
             <span style={S('color:var(--ink3);display:flex;flex-shrink:0')}>{ic('arrow', 16)}</span>
