@@ -198,7 +198,7 @@ export default function FleetPortal() {
     if (r === 'fleet-detail') { const f = allFleets.find((x) => x.id === state.fleetId); title = f.name; sub = `Fleet manager · ${f.manager} · ${f.vehicles} vozidel` }
     else if (r === 'vehicle-detail') { const v = vehiclesData.find((x) => x.id === state.vehicleId); title = `${v.brand} ${v.model}`; sub = `${v.plate} · ${fleetName(v.fleet)}` }
     else if (r === 'bonifikace-detail') { const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]; title = `Bonifikace · ${f.insurers[0]}`; sub = `Flotilová smlouva č. ${f.policy || '—'}` }
-    else if (r === 'documents-detail') { const tm = { zk: ['Zelené karty', 'Zelená karta ke každému vozidlu'], orv: ['Technické průkazy', 'Osvědčení o registraci vozidla (ORV)'] }; const t = tm[state.docCat] || ['Pojistné smlouvy', 'Flotilové smlouvy a jejich dokumenty']; title = t[0]; sub = t[1] }
+    else if (r === 'documents-detail') { const tm = { zk: ['Zelené karty', 'Zelená karta ke každému vozidlu'], orv: ['Technické průkazy', 'Osvědčení o registraci vozidla (ORV)'], faktury: ['Faktury', 'Faktury za pojištění'] }; const t = tm[state.docCat] || ['Pojistné smlouvy', 'Flotilové smlouvy a jejich dokumenty']; title = t[0]; sub = t[1] }
     else if (r === 'claim-detail') { const c = claimsData.find((x) => x.id === state.claimId) || claimsData[0]; title = `Škoda ${c.id}`; sub = `${c.type} · ${c.vehicle}` }
     else { const t = titles[r] || ['', '']; title = t[0]; sub = t[1] }
 
@@ -576,7 +576,7 @@ export default function FleetPortal() {
       F('Pojistné smlouvy', 1174, 'shield', 'var(--star-soft)', 'var(--star)', () => navigate('documents-detail', { docCat: 'smlouvy', docOpen: {} })),
       F('Zelené karty', 312, 'doc2', 'var(--green-soft)', 'var(--green)', () => navigate('documents-detail', { docCat: 'zk', docOpen: {} })),
       F('Technické průkazy', 312, 'file', 'var(--blue-soft)', 'var(--blue)', () => navigate('documents-detail', { docCat: 'orv', docOpen: {} })),
-      F('Faktury', 486, 'banknote', 'var(--amber-soft)', 'var(--amber)'),
+      F('Faktury', 486, 'banknote', 'var(--amber-soft)', 'var(--amber)', () => navigate('documents-detail', { docCat: 'faktury', docOpen: {} })),
       F('Servisní záznamy', 724, 'wrench', '#F1F1F3', 'var(--ink2)'),
       F('STK & emise', 298, 'check2', 'var(--green-soft)', 'var(--green)'),
       F('Fotodokumentace', 1840, 'camera', 'var(--blue-soft)', 'var(--blue)'),
@@ -616,6 +616,46 @@ export default function FleetPortal() {
         ? { cat: 'zk', vehicles, count: vehicles.length, goBack, banner: 'Zelená karta (mezinárodní karta automobilového pojištění) ke každému vozidlu — náhled a stažení.', docColLabel: 'Zelená karta', badgeLabel: 'ZK platná', iconBg: 'var(--green-soft)', iconColor: 'var(--green)', bannerBg: 'var(--green-soft)', bannerColor: '#15803D' }
         : { cat: 'orv', vehicles, count: vehicles.length, goBack, banner: 'Osvědčení o registraci vozidla (technický průkaz, část I) ke každému vozidlu — náhled a stažení.', docColLabel: 'Technický průkaz', badgeLabel: 'ORV část I', iconBg: 'var(--blue-soft)', iconColor: 'var(--blue)', bannerBg: 'var(--blue-soft)', bannerColor: 'var(--blue-ink)' }
       return { dd }
+    }
+
+    if (state.docCat === 'faktury') {
+      const today = new Date(2026, 5, 19)
+      const parse = (s) => { const p = s.replace(/\s/g, '').split('.').map(Number); return new Date(p[2], p[1] - 1, p[0]) }
+      const fmt = (dt) => `${dt.getDate()}. ${dt.getMonth() + 1}. ${dt.getFullYear()}`
+      const addDays = (s, nn) => { const dt = parse(s); dt.setDate(dt.getDate() + nn); return fmt(dt) }
+      const periods = [
+        { issue: '2. 1. 2026', due: '16. 1. 2026', pay: 6 },
+        { issue: '1. 4. 2026', due: '15. 4. 2026', pay: 9 },
+        { issue: '1. 7. 2026', due: '15. 7. 2026', pay: null },
+      ]
+      let n = 4821
+      const invoices = []
+      fleetsData.forEach((f) => {
+        const grp = {}
+        vehiclesData.filter((v) => v.fleet === f.id && v.status !== 'ended').forEach((v) => { grp[v.insurer] = (grp[v.insurer] || 0) + v.premium })
+        let pairs = Object.entries(grp)
+        if (!pairs.length) pairs = (f.insurers || []).map((name) => [name, Math.round(f.premium / ((f.insurers || []).length || 1))])
+        pairs.forEach(([insurer, premium]) => {
+          const policy = fleetInsurerPolicy(insurer, f.id)
+          const q = Math.round(premium / 4 / 100) * 100
+          periods.forEach((pr, pi) => {
+            const num = 'FAV-2026-' + (n++)
+            let paid, paidDate
+            if (pi === 2) { paid = false; paidDate = '—' }
+            else { paid = !(n % 4 === 0); paidDate = paid ? addDays(pr.issue, pr.pay) : '—' }
+            const overdue = !paid && parse(pr.due) < today
+            const meta = paid ? { l: 'Uhrazeno', c: 'var(--green)', bg: 'var(--green-soft)' } : overdue ? { l: 'Po splatnosti', c: 'var(--star)', bg: 'var(--star-soft)' } : { l: 'Neuhrazeno', c: 'var(--amber)', bg: 'var(--amber-soft)' }
+            invoices.push({
+              num, insurer, policy, amount: q, amountF: czk(q), issue: pr.issue, due: pr.due, paidDate, paid,
+              statusLabel: meta.l, chipStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:${meta.c};background:${meta.bg};padding:3px 9px;border-radius:20px;white-space:nowrap`,
+            })
+          })
+        })
+      })
+      const totalDue = invoices.reduce((a, b) => a + b.amount, 0)
+      const unpaid = invoices.filter((x) => !x.paid)
+      const unpaidSum = unpaid.reduce((a, b) => a + b.amount, 0)
+      return { dd: { cat: 'faktury', invoices, count: invoices.length, totalF: czk(totalDue), unpaidCount: unpaid.length, unpaidF: czk(unpaidSum), goBack } }
     }
 
     const open = state.docOpen

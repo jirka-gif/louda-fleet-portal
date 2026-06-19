@@ -1595,10 +1595,54 @@ function DocumentsVehicleDocs({ vm }) {
   )
 }
 
+/* ============================ FAKTURY ============================ */
+function DocumentsInvoices({ vm }) {
+  const dd = vm.dd
+  return (
+    <div>
+      <Hov onClick={dd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Dokumenty</Hov>
+
+      <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px')}>
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px')}><div style={S('font-size:12px;color:var(--ink3)')}>Faktur celkem</div><div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:5px')}>{dd.count}</div></div>
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px')}><div style={S('font-size:12px;color:var(--ink3)')}>Předepsáno celkem</div><div style={S('font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:5px')}>{dd.totalF}</div></div>
+        <div style={S('background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px')}><div style={S('font-size:12px;color:var(--ink3)')}>Neuhrazeno</div><div style={S(`font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:5px;color:${dd.unpaidCount ? 'var(--star)' : 'var(--green)'}`)}>{dd.unpaidF}</div><div style={S('font-size:11.5px;color:var(--ink3);margin-top:1px')}>{dd.unpaidCount} faktur</div></div>
+      </div>
+
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+        <HScroll minW={1080}>
+          <div style={S('display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+            <div style={S('width:124px;flex-shrink:0')}>Číslo faktury</div>
+            <div style={S('flex:1;min-width:0')}>Pojišťovna</div>
+            <div style={S('width:120px')}>Číslo smlouvy</div>
+            <div style={S('width:104px;text-align:right')}>Předpis k úhradě</div>
+            <div style={S('width:84px')}>Vystaveno</div>
+            <div style={S('width:84px')}>Splatnost</div>
+            <div style={S('width:84px')}>Uhrazeno</div>
+            <div style={S('width:104px')}>Stav</div>
+          </div>
+          {dd.invoices.map((iv, i) => (
+            <Hov key={i} base="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
+              <div style={S('width:124px;flex-shrink:0;font-size:12.5px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums')}>{iv.num}</div>
+              <div style={S('flex:1;min-width:0;display:flex;align-items:center;gap:10px')}><InsurerLogo name={iv.insurer} size={30} /><span style={S('font-size:13px;font-weight:600')}>{iv.insurer}</span></div>
+              <div style={S('width:120px;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{iv.policy}</div>
+              <div style={S('width:104px;text-align:right;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums')}>{iv.amountF}</div>
+              <div style={S('width:84px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{iv.issue}</div>
+              <div style={S('width:84px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{iv.due}</div>
+              <div style={S(`width:84px;font-size:12px;font-variant-numeric:tabular-nums;color:${iv.paid ? 'var(--ink2)' : 'var(--ink3)'}`)}>{iv.paidDate}</div>
+              <div style={S('width:104px')}><span style={S(iv.chipStyle)}>{iv.statusLabel}</span></div>
+            </Hov>
+          ))}
+        </HScroll>
+      </div>
+    </div>
+  )
+}
+
 /* ============================ DOCUMENTS DETAIL ============================ */
 function DocumentsDetail({ vm }) {
   const dd = vm.dd
   if (dd.cat === 'zk' || dd.cat === 'orv') return <DocumentsVehicleDocs vm={vm} />
+  if (dd.cat === 'faktury') return <DocumentsInvoices vm={vm} />
   return (
     <div>
       <Hov onClick={dd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Dokumenty</Hov>
