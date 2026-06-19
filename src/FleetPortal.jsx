@@ -158,6 +158,7 @@ export default function FleetPortal() {
     if (r === 'fleet-detail') { const f = allFleets.find((x) => x.id === state.fleetId); title = f.name; sub = `Fleet manager · ${f.manager} · ${f.vehicles} vozidel` }
     else if (r === 'vehicle-detail') { const v = vehiclesData.find((x) => x.id === state.vehicleId); title = `${v.brand} ${v.model}`; sub = `${v.plate} · ${fleetName(v.fleet)}` }
     else if (r === 'bonifikace-detail') { const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]; title = `Bonifikace · ${f.insurers[0]}`; sub = `Flotilová smlouva č. ${f.policy || '—'}` }
+    else if (r === 'documents-detail') { const t = state.docCat === 'zk' ? ['Zelené karty', 'Zelená karta ke každému vozidlu'] : ['Pojistné smlouvy', 'Flotilové smlouvy a jejich dokumenty']; title = t[0]; sub = t[1] }
     else { const t = titles[r] || ['', '']; title = t[0]; sub = t[1] }
 
     const aiMessages = state.aiMessages.map((m) => ({
@@ -495,7 +496,7 @@ export default function FleetPortal() {
     const F = (name, count, icon, bg, color, onClick) => ({ name, count, icon: ic(icon, 18), bg, color, onClick, nav: !!onClick })
     const docFolders = [
       F('Pojistné smlouvy', 1174, 'shield', 'var(--star-soft)', 'var(--star)', () => navigate('documents-detail', { docCat: 'smlouvy', docOpen: {} })),
-      F('Zelené karty', 312, 'doc2', 'var(--green-soft)', 'var(--green)'),
+      F('Zelené karty', 312, 'doc2', 'var(--green-soft)', 'var(--green)', () => navigate('documents-detail', { docCat: 'zk', docOpen: {} })),
       F('Technické průkazy', 312, 'file', 'var(--blue-soft)', 'var(--blue)'),
       F('Faktury', 486, 'banknote', 'var(--amber-soft)', 'var(--amber)'),
       F('Servisní záznamy', 724, 'wrench', '#F1F1F3', 'var(--ink2)'),
@@ -517,6 +518,20 @@ export default function FleetPortal() {
 
   const documentsDetailVM = () => {
     if (state.route !== 'documents-detail') return {}
+    const goBack = () => navigate('documents')
+
+    if (state.docCat === 'zk') {
+      const vehicles = vehiclesData.map((v) => {
+        const zkName = `Zelená karta ${v.plate.replace(/\s/g, '')}.pdf`
+        return {
+          id: v.id, plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, driver: v.driver, year: v.year, insurer: v.insurer,
+          zkName, preview: ic('search', 16), download: ic('arrow', 16),
+          openPreview: () => setState({ docPreview: { kind: 'zk', name: zkName, type: 'Zelená karta', size: '94 kB', insurer: v.insurer, plate: v.plate, vin: v.vin, brand: v.brand, model: v.model, validFrom: '1. 1. 2026', validTo: '31. 12. 2026' } }),
+        }
+      })
+      return { dd: { cat: 'zk', vehicles, count: vehicles.length, goBack } }
+    }
+
     const open = state.docOpen
     const contracts = allFleets.map((f) => {
       const isOpen = !!open[f.id]
@@ -539,7 +554,7 @@ export default function FleetPortal() {
         headStyle: `display:flex;align-items:center;gap:14px;padding:15px 18px;cursor:pointer;background:${isOpen ? '#FBFBFC' : '#fff'}`,
       }
     })
-    return { dd: { contracts, count: contracts.length, goBack: () => navigate('documents') } }
+    return { dd: { cat: 'smlouvy', contracts, count: contracts.length, goBack } }
   }
 
   const analyticsVM = () => {

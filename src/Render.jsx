@@ -138,9 +138,56 @@ export default function Render({ vm }) {
   )
 }
 
+/* ============================ GREEN CARD PREVIEW ============================ */
+function GreenCardPreview({ vm }) {
+  const d = vm.docPreview
+  const countries = ['CZ', 'SK', 'D', 'A', 'PL', 'H', 'I', 'F', 'E', 'CH', 'SLO', 'HR']
+  return (
+    <div onClick={vm.closeDocPreview} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:680px;max-width:96vw;max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center')}>{ic('doc2', 18)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}><div style={S('font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{d.type} · {d.size}</div></div>
+          <Hov as="span" base="display:flex;align-items:center;gap:6px;height:34px;padding:0 13px;border:1px solid var(--border2);border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('arrow', 15)} Stáhnout</Hov>
+          <span onClick={vm.closeDocPreview} style={S('color:var(--ink3);cursor:pointer;display:flex;margin-left:4px')}>{ic('close', 18)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;background:#F1F1F3;padding:24px')}>
+          <div style={S('max-width:540px;margin:0 auto;background:#F1FBF4;border:2px solid #16A34A;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.1);padding:26px 28px')}>
+            <div style={S('display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px')}>
+              <div>
+                <div style={S('font-size:10px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:.5px')}>Mezinárodní karta automobilového pojištění</div>
+                <div style={S('font-size:19px;font-weight:800;letter-spacing:-.3px;color:#166534;margin-top:2px')}>Zelená karta</div>
+              </div>
+              <InsurerLogo name={d.insurer} size={42} />
+            </div>
+
+            <div style={S('display:flex;gap:10px;margin-bottom:16px')}>
+              <div style={S('flex:1;background:#fff;border:1px solid #BBE6C9;border-radius:8px;padding:10px 12px')}><div style={S('font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px')}>Platí od</div><div style={S('font-size:14px;font-weight:700;color:#166534;font-variant-numeric:tabular-nums')}>{d.validFrom}</div></div>
+              <div style={S('flex:1;background:#fff;border:1px solid #BBE6C9;border-radius:8px;padding:10px 12px')}><div style={S('font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px')}>Platí do</div><div style={S('font-size:14px;font-weight:700;color:#166534;font-variant-numeric:tabular-nums')}>{d.validTo}</div></div>
+            </div>
+
+            <div style={S('background:#fff;border:1px solid #BBE6C9;border-radius:8px;overflow:hidden;margin-bottom:16px')}>
+              {[['Registrační značka (SPZ)', d.plate], ['VIN', d.vin], ['Vozidlo', `${d.brand} ${d.model}`], ['Pojistitel', d.insurer], ['Stát registrace', 'CZ — Česká republika']].map((r, i) => (
+                <div key={i} style={S(`display:flex;justify-content:space-between;gap:14px;padding:10px 14px;font-size:12.5px;${i < 4 ? 'border-bottom:1px solid #E3F3E9;' : ''}`)}><span style={S('color:var(--ink3)')}>{r[0]}</span><span style={S('font-weight:700;text-align:right;font-variant-numeric:tabular-nums')}>{r[1]}</span></div>
+              ))}
+            </div>
+
+            <div style={S('font-size:10px;font-weight:700;color:#15803D;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px')}>Platí na území států</div>
+            <div style={S('display:flex;flex-wrap:wrap;gap:6px')}>
+              {countries.map((c, i) => <span key={i} style={S('font-size:11px;font-weight:700;color:#166534;background:#fff;border:1px solid #BBE6C9;border-radius:6px;padding:3px 9px;font-variant-numeric:tabular-nums')}>{c}</span>)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ============================ DOCUMENT PREVIEW MODAL ============================ */
 function DocPreviewModal({ vm }) {
   const d = vm.docPreview
+  if (d.kind === 'zk') return <GreenCardPreview vm={vm} />
   const headings = { Smlouva: 'Pojistná smlouva', IPID: 'Informační dokument o pojistném produktu', VPP: 'Všeobecné pojistné podmínky', Záznam: 'Záznam z jednání', Dodatek: 'Dodatek k pojistné smlouvě' }
   const heading = headings[d.type] || d.type
   const line = (w) => <div style={S(`height:9px;border-radius:4px;background:#ECECEE;width:${w}`)}></div>
@@ -965,9 +1012,50 @@ function Documents({ vm }) {
   )
 }
 
-/* ============================ DOCUMENTS DETAIL (Pojistné smlouvy) ============================ */
+/* ============================ ZELENÉ KARTY ============================ */
+function DocumentsGreenCards({ vm }) {
+  const dd = vm.dd
+  return (
+    <div>
+      <Hov onClick={dd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Dokumenty</Hov>
+
+      <div style={S('display:flex;align-items:center;gap:9px;margin-bottom:14px;padding:13px 16px;background:var(--green-soft);border-radius:12px;font-size:12.5px;color:#15803D')}>
+        <span style={S('display:flex;flex-shrink:0')}>{ic('doc2', 17)}</span>
+        <span>Zelená karta (mezinárodní karta automobilového pojištění) ke každému vozidlu — náhled a stažení.</span>
+      </div>
+
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+        <HScroll minW={840}>
+          <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+            <div style={S('width:40px;flex-shrink:0')}></div>
+            <div style={S('width:96px;flex-shrink:0')}>SPZ</div>
+            <div style={S('flex:1;min-width:0')}>Vozidlo</div>
+            <div style={S('width:190px')}>VIN</div>
+            <div style={S('width:170px;text-align:right')}>Zelená karta</div>
+          </div>
+          {dd.vehicles.map((v) => (
+            <Hov key={v.id} base="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
+              <div style={S('width:40px;height:40px;flex-shrink:0;border-radius:10px;background:var(--green-soft);color:var(--green);display:flex;align-items:center;justify-content:center')}>{ic('car', 18)}</div>
+              <div style={S('width:96px;flex-shrink:0;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums')}>{v.plate}</div>
+              <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{v.brand} {v.model}</div><div style={S('font-size:12px;color:var(--ink3)')}>{v.driver} · {v.year} · {v.insurer}</div></div>
+              <div style={S('width:190px;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{v.vin}</div>
+              <div style={S('width:170px;display:flex;align-items:center;justify-content:flex-end;gap:10px')}>
+                <span style={S('font-size:11.5px;font-weight:700;color:#15803D;background:var(--green-soft);padding:4px 10px;border-radius:20px;white-space:nowrap')}>ZK platná</span>
+                <Hov as="span" onClick={v.openPreview} base="cursor:pointer;display:flex;color:var(--ink3)" hover="color:var(--blue)" title="Náhled">{v.preview}</Hov>
+                <Hov as="span" base="cursor:pointer;display:flex;color:var(--ink3)" hover="color:var(--blue)" title="Stáhnout">{v.download}</Hov>
+              </div>
+            </Hov>
+          ))}
+        </HScroll>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ DOCUMENTS DETAIL ============================ */
 function DocumentsDetail({ vm }) {
   const dd = vm.dd
+  if (dd.cat === 'zk') return <DocumentsGreenCards vm={vm} />
   return (
     <div>
       <Hov onClick={dd.goBack} base="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink3);cursor:pointer;margin-bottom:14px" hover="color:var(--ink)"><span style={S('transform:rotate(180deg);display:flex')}>{ic('arrow', 16)}</span> Dokumenty</Hov>
