@@ -1679,29 +1679,29 @@ function DocumentsInvoices({ vm }) {
       </div>
 
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
-        <HScroll minW={900}>
+        <HScroll minW={922}>
           <div style={S('display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px')}>
-            <div style={S('width:108px;flex-shrink:0')}>Číslo faktury</div>
-            <div style={S('flex:1;min-width:0')}>Pojišťovna</div>
-            <div style={S('width:104px')}>Č. smlouvy</div>
-            <div style={S('width:88px;text-align:right')}>Předpis</div>
-            <div style={S('width:76px')}>Vystaveno</div>
-            <div style={S('width:76px')}>Splatnost</div>
-            <div style={S('width:76px')}>Uhrazeno</div>
-            <div style={S('width:96px')}>Stav</div>
-            <div style={S('width:46px;text-align:right')}>Doklad</div>
+            <div style={S('width:112px;flex-shrink:0')}>Číslo faktury</div>
+            <div style={S('flex:1;min-width:140px;max-width:230px')}>Pojišťovna</div>
+            <div style={S('width:108px')}>Č. smlouvy</div>
+            <div style={S('width:92px;text-align:right')}>Předpis</div>
+            <div style={S('width:78px;text-align:right')}>Vystaveno</div>
+            <div style={S('width:78px;text-align:right')}>Splatnost</div>
+            <div style={S('width:78px;text-align:right')}>Uhrazeno</div>
+            <div style={S('width:104px')}>Stav</div>
+            <div style={S('width:52px;flex-shrink:0;text-align:right')}>Doklad</div>
           </div>
           {dd.invoices.map((iv, i) => (
             <Hov key={i} base="display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
-              <div style={S('width:108px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums')}>{iv.num}</div>
-              <div style={S('flex:1;min-width:0;display:flex;align-items:center;gap:9px')}><InsurerLogo name={iv.insurer} size={28} /><span style={S('font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{iv.insurer}</span></div>
-              <div style={S('width:104px;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{iv.policy}</div>
-              <div style={S('width:88px;text-align:right;font-weight:700;font-size:12.5px;font-variant-numeric:tabular-nums')}>{iv.amountF}</div>
-              <div style={S('width:76px;font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{iv.issue}</div>
-              <div style={S('width:76px;font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{iv.due}</div>
-              <div style={S(`width:76px;font-size:11.5px;font-variant-numeric:tabular-nums;color:${iv.paid ? 'var(--ink2)' : 'var(--ink3)'}`)}>{iv.paidDate}</div>
-              <div style={S('width:96px')}><span style={S(iv.chipStyle)}>{iv.statusLabel}</span></div>
-              <div style={S('width:46px;display:flex;align-items:center;justify-content:flex-end;gap:9px;color:var(--ink3)')}><Hov as="span" onClick={iv.openPreview} base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Náhled">{iv.preview}</Hov><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Stáhnout">{iv.download}</Hov></div>
+              <div style={S('width:112px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums')}>{iv.num}</div>
+              <div style={S('flex:1;min-width:140px;max-width:230px;display:flex;align-items:center;gap:9px')}><InsurerLogo name={iv.insurer} size={28} /><span style={S('font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{iv.insurer}</span></div>
+              <div style={S('width:108px;font-size:12px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{iv.policy}</div>
+              <div style={S('width:92px;text-align:right;font-weight:700;font-size:12.5px;font-variant-numeric:tabular-nums')}>{iv.amountF}</div>
+              <div style={S('width:78px;text-align:right;font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{iv.issue}</div>
+              <div style={S('width:78px;text-align:right;font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{iv.due}</div>
+              <div style={S(`width:78px;text-align:right;font-size:11.5px;font-variant-numeric:tabular-nums;color:${iv.paid ? 'var(--ink2)' : 'var(--ink3)'}`)}>{iv.paidDate}</div>
+              <div style={S('width:104px')}><span style={S(iv.chipStyle)}>{iv.statusLabel}</span></div>
+              <div style={S('width:52px;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;gap:9px;color:var(--ink3)')}><Hov as="span" onClick={iv.openPreview} base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Náhled">{iv.preview}</Hov><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Stáhnout">{iv.download}</Hov></div>
             </Hov>
           ))}
         </HScroll>
