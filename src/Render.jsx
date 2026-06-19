@@ -164,6 +164,8 @@ export default function Render({ vm }) {
       {vm.unsub && <UnsubscribeModal vm={vm} />}
       {vm.costModal && <CostModal vm={vm} />}
       {vm.noteModal && <NoteModal vm={vm} />}
+      {vm.parkModal && <ChangeParkModal vm={vm} />}
+      {vm.driverModal && <AssignDriverModal vm={vm} />}
     </div>
   )
 }
@@ -333,6 +335,122 @@ function NoteModal({ vm }) {
         <div style={S('display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border)')}>
           <span onClick={vm.closeNoteModal} style={S('height:40px;padding:0 18px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer')}>Zrušit</span>
           <div onClick={canSave ? vm.submitNote : undefined} style={S(`height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--star);cursor:${canSave ? 'pointer' : 'not-allowed'};opacity:${canSave ? 1 : .5}`)}>{ic('check', 16)} Uložit poznámku</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ ZMĚNIT PARK ============================ */
+function ChangeParkModal({ vm }) {
+  const c = vm.parkModal
+  const target = vm.parkOptions.find((p) => p.id === vm.parkTarget)
+  return (
+    <div onClick={vm.closeParkModal} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.4);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:540px;max-width:96vw;max-height:90vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('transfer', 18)}</div>
+          <div style={{ flex: 1 }}><div style={S('font-size:16px;font-weight:700')}>{vm.parkDone ? 'Vozidlo přesunuto' : 'Změnit vozový park'}</div><div style={S('font-size:12.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{c.plate} · {c.brand} {c.model}</div></div>
+          <span onClick={vm.closeParkModal} style={S('color:var(--ink3);cursor:pointer;display:flex')}>{ic('close', 17)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;padding:22px')}>
+          {vm.parkDone ? (
+            <div style={S('text-align:center;padding:20px 0')}>
+              <div style={S('width:64px;height:64px;border-radius:50%;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;margin:0 auto 16px')}>{ic('check2', 30, 2.2)}</div>
+              <div style={S('font-size:19px;font-weight:800')}>Vozidlo přesunuto</div>
+              <div style={S('font-size:13.5px;color:var(--ink3);margin-top:6px;max-width:380px;margin-left:auto;margin-right:auto')}>Vozidlo {c.plate} bylo přesunuto z <strong style={S('color:var(--ink)')}>{vm.parkCurrentName}</strong> do <strong style={S('color:var(--ink)')}>{target ? target.name : ''}</strong>.</div>
+            </div>
+          ) : (
+            <>
+              <div style={S('display:flex;align-items:center;gap:10px;padding:11px 14px;background:#FBFBFC;border:1px solid var(--border);border-radius:11px;margin-bottom:16px')}>
+                <span style={S('color:var(--ink3);display:flex')}>{ic('fleets', 17)}</span>
+                <div><div style={S('font-size:11px;color:var(--ink3)')}>Aktuální park</div><div style={S('font-size:13.5px;font-weight:600')}>{vm.parkCurrentName}</div></div>
+              </div>
+              <div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:8px')}>Přesunout do parku</div>
+              <div style={S('display:flex;flex-direction:column;gap:8px')}>
+                {vm.parkOptions.map((p, i) => {
+                  const on = p.id === vm.parkTarget
+                  return (
+                    <Hov key={i} onClick={() => vm.setParkTarget(p.id)} base={`display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid ${on ? 'var(--blue)' : 'var(--border)'};border-radius:11px;cursor:pointer;background:${on ? '#FAFBFF' : '#fff'};transition:border-color .15s ease,background .15s ease`} hover={on ? '' : 'border:1.5px solid #D4D4D8'}>
+                      <div style={S(`width:36px;height:36px;border-radius:9px;background:#F1F1F3;color:var(--ink2);display:flex;align-items:center;justify-content:center;flex-shrink:0`)}>{ic('fleets', 17)}</div>
+                      <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{p.name}</div><div style={S('font-size:11.5px;color:var(--ink3)')}>{p.manager} · {p.vehicles} vozidel</div></div>
+                      <span style={S(`width:18px;height:18px;border-radius:50%;border:2px solid ${on ? 'var(--blue)' : '#CFCFD4'};background:${on ? 'var(--blue)' : '#fff'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff`)}>{on ? ic('check', 11, 3) : null}</span>
+                    </Hov>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={S('display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border)')}>
+          {vm.parkDone ? (
+            <div onClick={vm.closeParkModal} style={S('height:40px;padding:0 22px;border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:#fff;background:var(--blue);cursor:pointer')}>Hotovo</div>
+          ) : (
+            <>
+              <span onClick={vm.closeParkModal} style={S('height:40px;padding:0 18px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer')}>Zrušit</span>
+              <div onClick={vm.parkTarget ? vm.submitPark : undefined} style={S(`height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--blue);cursor:${vm.parkTarget ? 'pointer' : 'not-allowed'};opacity:${vm.parkTarget ? 1 : .5}`)}>{ic('transfer', 16)} Přesunout vozidlo</div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================ PŘIŘADIT ŘIDIČE ============================ */
+function AssignDriverModal({ vm }) {
+  const c = vm.driverModal
+  const sel = vm.drivers.find((d) => d.id === vm.driverSel)
+  return (
+    <div onClick={vm.closeDriverModal} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.4);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:540px;max-width:96vw;max-height:90vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center')}>{ic('user1', 18)}</div>
+          <div style={{ flex: 1 }}><div style={S('font-size:16px;font-weight:700')}>{vm.driverDone ? 'Řidič přiřazen' : 'Přiřadit řidiče'}</div><div style={S('font-size:12.5px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{c.plate} · {c.brand} {c.model}</div></div>
+          <span onClick={vm.closeDriverModal} style={S('color:var(--ink3);cursor:pointer;display:flex')}>{ic('close', 17)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;padding:22px')}>
+          {vm.driverDone ? (
+            <div style={S('text-align:center;padding:20px 0')}>
+              <div style={S('width:64px;height:64px;border-radius:50%;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;margin:0 auto 16px')}>{ic('check2', 30, 2.2)}</div>
+              <div style={S('font-size:19px;font-weight:800')}>Řidič přiřazen</div>
+              <div style={S('font-size:13.5px;color:var(--ink3);margin-top:6px;max-width:380px;margin-left:auto;margin-right:auto')}>Vozidlo {c.plate} bylo přiřazeno řidiči <strong style={S('color:var(--ink)')}>{sel ? sel.name : ''}</strong>.</div>
+            </div>
+          ) : (
+            <>
+              <div style={S('display:flex;align-items:center;gap:10px;padding:11px 14px;background:#FBFBFC;border:1px solid var(--border);border-radius:11px;margin-bottom:16px')}>
+                <span style={S('color:var(--ink3);display:flex')}>{ic('user1', 17)}</span>
+                <div><div style={S('font-size:11px;color:var(--ink3)')}>Aktuální řidič</div><div style={S('font-size:13.5px;font-weight:600')}>{c.driver}</div></div>
+              </div>
+              <div style={S('font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:8px')}>Vybrat řidiče z databáze</div>
+              <div style={S('display:flex;flex-direction:column;gap:8px')}>
+                {vm.drivers.map((d, i) => {
+                  const on = d.id === vm.driverSel
+                  return (
+                    <Hov key={i} onClick={() => vm.setDriverSel(d.id)} base={`display:flex;align-items:center;gap:12px;padding:11px 14px;border:1.5px solid ${on ? 'var(--blue)' : 'var(--border)'};border-radius:11px;cursor:pointer;background:${on ? '#FAFBFF' : '#fff'};transition:border-color .15s ease,background .15s ease`} hover={on ? '' : 'border:1.5px solid #D4D4D8'}>
+                      <div style={S('width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3A3A42,#18181B);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0')}>{d.initials}</div>
+                      <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{d.name}</div><div style={S('font-size:11.5px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap')}>{d.role} · {d.loc}</div></div>
+                      <span style={S(`width:18px;height:18px;border-radius:50%;border:2px solid ${on ? 'var(--blue)' : '#CFCFD4'};background:${on ? 'var(--blue)' : '#fff'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff`)}>{on ? ic('check', 11, 3) : null}</span>
+                    </Hov>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={S('display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--border)')}>
+          {vm.driverDone ? (
+            <div onClick={vm.closeDriverModal} style={S('height:40px;padding:0 22px;border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:#fff;background:var(--blue);cursor:pointer')}>Hotovo</div>
+          ) : (
+            <>
+              <span onClick={vm.closeDriverModal} style={S('height:40px;padding:0 18px;border:1px solid var(--border2);border-radius:10px;display:flex;align-items:center;font-size:13.5px;font-weight:600;color:var(--ink2);cursor:pointer')}>Zrušit</span>
+              <div onClick={vm.driverSel ? vm.submitDriver : undefined} style={S(`height:40px;padding:0 20px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:#fff;background:var(--blue);cursor:${vm.driverSel ? 'pointer' : 'not-allowed'};opacity:${vm.driverSel ? 1 : .5}`)}>{ic('check', 16)} Přiřadit řidiče</div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -1418,7 +1536,7 @@ function VehicleDetail({ vm }) {
             </div>
             <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:9px')}>
               {vd.actions.map((a, i) => (
-                <Hov key={i} base="display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 6px;border:1px solid var(--border);border-radius:11px;cursor:pointer;text-align:center;transition:border-color .15s ease,background .15s ease" hover="border:1px solid var(--blue);background:#FAFBFF">
+                <Hov key={i} onClick={a.onClick} base="display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 6px;border:1px solid var(--border);border-radius:11px;cursor:pointer;text-align:center;transition:border-color .15s ease,background .15s ease" hover="border:1px solid var(--blue);background:#FAFBFF">
                   <span style={{ color: a.color, display: 'flex' }}>{a.icon}</span>
                   <span style={S('font-size:11.5px;font-weight:600;line-height:1.2;color:var(--ink2)')}>{a.label}</span>
                 </Hov>

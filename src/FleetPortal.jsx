@@ -20,6 +20,18 @@ const INS_COLORS = { Kooperativa: '#2058C9', Allianz: '#16A34A', 'ČPP': '#C2780
 const DEFAULT_BONUS = [{ threshold: 30, rate: 15 }, { threshold: 40, rate: 10 }, { threshold: 50, rate: 5 }]
 const INSURER_CODE = { Kooperativa: '7720', Allianz: '4055', 'ČPP': '0019', Generali: '5544', UNIQA: '2401', 'ČSOB': '8830', 'ČSOB Poj.': '8830' }
 const RISK_META = { POV: { bg: 'var(--blue-soft)', c: 'var(--blue-ink)' }, HAV: { bg: 'var(--star-soft)', c: 'var(--star-ink)' }, Skla: { bg: '#E3F4F5', c: '#0E7C86' } }
+// Interní databáze řidičů (pro přiřazení k vozidlu)
+const DRIVERS = [
+  { id: 'd1', name: 'Petr Svoboda', role: 'Obchodní zástupce', loc: 'Praha – Centrála', phone: '+420 602 118 224', vehicles: 1 },
+  { id: 'd2', name: 'Jana Marešová', role: 'Servisní technik', loc: 'Mladá Boleslav', phone: '+420 603 447 901', vehicles: 0 },
+  { id: 'd3', name: 'Tomáš Dvořák', role: 'Vedoucí prodeje', loc: 'Praha – Centrála', phone: '+420 605 220 145', vehicles: 1 },
+  { id: 'd4', name: 'Lucie Horáková', role: 'Account manažer', loc: 'Brno', phone: '+420 604 909 312', vehicles: 1 },
+  { id: 'd5', name: 'Martin Beneš', role: 'Obchodní zástupce', loc: 'Plzeň', phone: '+420 606 771 088', vehicles: 0 },
+  { id: 'd6', name: 'Eva Kučerová', role: 'Fleet koordinátor', loc: 'Praha – Centrála', phone: '+420 602 334 760', vehicles: 2 },
+  { id: 'd7', name: 'Jakub Němec', role: 'Servisní poradce', loc: 'Liberec', phone: '+420 607 145 503', vehicles: 0 },
+  { id: 'd8', name: 'Veronika Pospíšilová', role: 'Obchodní zástupce', loc: 'Ostrava', phone: '+420 605 612 974', vehicles: 1 },
+]
+const initialsOf = (name) => name.replace(/\b\wng?\.\s*/gi, '').trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase()
 const CLAIM_EXPORT_COLS = [
   { key: 'id', label: 'Číslo škody' }, { key: 'spz', label: 'SPZ' }, { key: 'vin', label: 'VIN' }, { key: 'vozidlo', label: 'Vozidlo' },
   { key: 'riziko', label: 'Riziko' }, { key: 'nahlasil', label: 'Nahlásil' }, { key: 'nahlaseno', label: 'Nahlášeno' }, { key: 'typ', label: 'Typ události' },
@@ -60,6 +72,9 @@ export default function FleetPortal() {
     unsub: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026',
     costModal: null, costDone: false, costType: 'Servis a opravy', costDesc: '', costAmount: '', costDate: '19. 6. 2026', costFile: null,
     noteModal: null, noteText: '', vehNotes: {},
+    parkModal: null, parkTarget: null, parkDone: false,
+    driverModal: null, driverSel: null, driverDone: false,
+    vehOverrides: {},
     np: false, npData: { name: '', manager: '', insurer: 'Kooperativa', policy: '', start: '1. 7. 2026', vehicles: '' },
     newFleets: [],
     docCat: null, docOpen: {}, docPreview: null,
@@ -95,6 +110,8 @@ export default function FleetPortal() {
   const openUnsub = (v) => setState({ rowMenu: null, unsubDone: false, unsubReason: 'Prodej vozidla', unsubDate: '1. 7. 2026', unsub: { plate: v.plate, brand: v.brand, model: v.model, vin: v.vin, fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), renewal: v.renewal } })
   const openCostModal = (v) => setState({ costModal: { plate: v.plate, brand: v.brand, model: v.model }, costDone: false, costType: 'Servis a opravy', costDesc: '', costAmount: '', costDate: '19. 6. 2026', costFile: null })
   const openNoteModal = (v) => setState({ noteModal: { vid: v.id, plate: v.plate, brand: v.brand, model: v.model }, noteText: '' })
+  const openParkModal = (v) => setState({ parkModal: { vid: v.id, plate: v.plate, brand: v.brand, model: v.model, fleet: v.fleet }, parkTarget: null, parkDone: false })
+  const openDriverModal = (v) => setState({ driverModal: { vid: v.id, plate: v.plate, brand: v.brand, model: v.model, driver: v.driver }, driverSel: null, driverDone: false })
   const buildClaimRow = (c) => {
     const cm = claimStatusMeta[c.status]
     const v = vehiclesData.find((x) => x.id === c.vId) || {}
@@ -280,6 +297,26 @@ export default function FleetPortal() {
         const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
         const note = { text: txt, author: 'Martin Kovář', initials: 'MK', date: '19. 6. 2026', time }
         return { vehNotes: { ...s.vehNotes, [vid]: [note, ...(s.vehNotes[vid] || [])] }, noteModal: null, noteText: '' }
+      }),
+      parkModal: state.parkModal, parkTarget: state.parkTarget, parkDone: state.parkDone,
+      parkCurrentName: state.parkModal ? fleetName(state.parkModal.fleet) : '',
+      parkOptions: fleetsData.filter((f) => !state.parkModal || f.id !== state.parkModal.fleet).map((f) => ({ id: f.id, name: f.name, manager: f.manager, vehicles: f.vehicles })),
+      closeParkModal: () => setState({ parkModal: null, parkTarget: null }),
+      setParkTarget: (id) => setState({ parkTarget: id }),
+      submitPark: () => setState((s) => {
+        if (!s.parkTarget || !s.parkModal) return {}
+        const vid = s.parkModal.vid
+        return { vehOverrides: { ...s.vehOverrides, [vid]: { ...(s.vehOverrides[vid] || {}), fleet: s.parkTarget } }, parkDone: true }
+      }),
+      driverModal: state.driverModal, driverSel: state.driverSel, driverDone: state.driverDone,
+      drivers: DRIVERS.map((d) => ({ ...d, initials: initialsOf(d.name) })),
+      closeDriverModal: () => setState({ driverModal: null, driverSel: null }),
+      setDriverSel: (id) => setState({ driverSel: id }),
+      submitDriver: () => setState((s) => {
+        if (!s.driverSel || !s.driverModal) return {}
+        const vid = s.driverModal.vid
+        const dr = DRIVERS.find((d) => d.id === s.driverSel)
+        return { vehOverrides: { ...s.vehOverrides, [vid]: { ...(s.vehOverrides[vid] || {}), driver: dr.name } }, driverDone: true }
       }),
       goFleets: () => navigate('fleets'),
       openClaimWizard: () => setState({ claimWizard: true, claimStep: 1, claimData: {} }),
@@ -518,7 +555,8 @@ export default function FleetPortal() {
 
   const vehicleDetailVM = () => {
     if (state.route !== 'vehicle-detail') return {}
-    const v = vehiclesData.find((x) => x.id === state.vehicleId)
+    const v0 = vehiclesData.find((x) => x.id === state.vehicleId)
+    const v = { ...v0, ...(state.vehOverrides[v0.id] || {}) }
     const tab = state.vehicleTab
     const m = statusMeta[v.status]
     const facts = [
@@ -526,11 +564,9 @@ export default function FleetPortal() {
       { k: 'Pojišťovna', v: v.insurer }, { k: 'Aktuální hodnota', v: v.value },
     ]
     const actions = [
-      { label: 'Změnit park', icon: ic('transfer', 20), color: 'var(--blue)' },
-      { label: 'Přiřadit řidiče', icon: ic('user1', 20), color: 'var(--blue)' },
-      { label: 'Vyměnit vůz', icon: ic('swap', 20), color: 'var(--ink2)' },
-      { label: 'Archivovat', icon: ic('archive', 20), color: 'var(--ink2)' },
-      { label: 'Odebrat', icon: ic('trash', 20), color: 'var(--star)' },
+      { label: 'Změnit park', icon: ic('transfer', 20), color: 'var(--blue)', onClick: () => openParkModal(v) },
+      { label: 'Přiřadit řidiče', icon: ic('user1', 20), color: 'var(--blue)', onClick: () => openDriverModal(v) },
+      { label: 'Odebrat', icon: ic('trash', 20), color: 'var(--star)', onClick: () => openUnsub(v) },
     ]
     const specs = [
       { k: 'Značka', v: v.brand }, { k: 'Model', v: v.model }, { k: 'VIN', v: v.vin }, { k: 'Číslo přihlášky', v: v.prihlaska },
