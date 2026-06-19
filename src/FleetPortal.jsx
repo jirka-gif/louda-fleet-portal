@@ -318,7 +318,7 @@ export default function FleetPortal() {
     const cb = [2, 1, 3, 0, 2, 1, 3, 2]; const cbm = Math.max(...cb, 1)
     const claimBars = cb.map((v, i) => ({ h: Math.round(v / cbm * 100) + '%', color: i >= 6 ? 'var(--star)' : '#E3B7BE' }))
     const open = state.rowMenu
-    const fleetVehicles = vehiclesData.filter((v) => v.fleet === f.id).map((v) => {
+    const fleetVehicles = vehiclesData.filter((v) => v.fleet === f.id && v.status !== 'ended').map((v) => {
       const mo = open === v.id
       return {
         id: v.id, plate: v.plate, brand: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel, insurer: v.insurer,
@@ -334,7 +334,13 @@ export default function FleetPortal() {
         unsubscribe: (e) => { e.stopPropagation(); openUnsub(v) },
       }
     })
-    const pv = vehiclesData.filter((v) => v.fleet === f.id)
+    const fleetEnded = vehiclesData.filter((v) => v.fleet === f.id && v.status === 'ended').map((v) => ({
+      id: v.id, plate: v.plate, brand: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel,
+      fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), endedDate: v.endedDate, endReason: v.endReason,
+      statusLabel: statusMeta[v.status].label, chipStyle: statusChip(v.status), onClick: () => openVehicle(v.id),
+    }))
+
+    const pv = vehiclesData.filter((v) => v.fleet === f.id && v.status !== 'ended')
     const grp = {}
     pv.forEach((v) => { if (!grp[v.insurer]) grp[v.insurer] = { count: 0, premium: 0 }; grp[v.insurer].count++; grp[v.insurer].premium += v.premium })
     let parkInsurers = Object.entries(grp).map(([name, x]) => ({ name, policy: fleetInsurerPolicy(name, f.id), count: x.count, premium: x.premium, premiumF: czk(x.premium) })).sort((a, b) => b.premium - a.premium)
@@ -353,6 +359,7 @@ export default function FleetPortal() {
       fd: {
         name: f.name, manager: f.manager, policy: f.policy || '—', policyStart: f.policyStart || '—', stats, summary, line: lp.line, area: lp.area, donut, insurerLegend, fuel, evPct, evDonut, claimBars, claims: f.claims,
         vehicles: fleetVehicles, vehicleCount: fleetVehicles.length, goVehiclesTab: () => setState({ fleetTab: 'vehicles' }),
+        endedVehicles: fleetEnded, endedCount: fleetEnded.length,
         parkInsurers, insurersTotalF, insurersCount: parkInsurers.length,
         isOverview: tab === 'overview', isVehicles: tab === 'vehicles', isInsurers: tab === 'insurers', isOther: !['overview', 'vehicles', 'insurers'].includes(tab),
         otherTitle: o[0], otherDesc: o[1], otherIcon: o[2],

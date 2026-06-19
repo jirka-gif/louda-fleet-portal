@@ -861,10 +861,12 @@ function FleetDetail({ vm }) {
             </HScroll>
             {vm.rowMenuOpen && <div onClick={vm.closeRowMenu} style={S('position:fixed;inset:0;z-index:24')}></div>}
           </div>
+          <EndedVehiclesTable rows={fd.endedVehicles} count={fd.endedCount} showPark={false} />
         </>
       )}
 
       {fd.isVehicles && (
+        <>
         <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
           <HScroll minW={820}>
           {fd.vehicles.map((v) => (
@@ -879,6 +881,8 @@ function FleetDetail({ vm }) {
           ))}
           </HScroll>
         </div>
+        <EndedVehiclesTable rows={fd.endedVehicles} count={fd.endedCount} showPark={false} />
+        </>
       )}
 
       {fd.isInsurers && (
@@ -1006,42 +1010,47 @@ function Vehicles({ vm }) {
         </div>
       </div>
 
-      {/* UKONČENÁ VOZIDLA */}
-      {vm.endedCount > 0 && (
-        <div style={S('margin-top:22px')}>
-          <div style={S('display:flex;align-items:center;gap:9px;margin-bottom:12px')}>
-            <span style={S('font-size:15px;font-weight:700')}>Ukončená vozidla</span>
-            <span style={S('font-size:11.5px;font-weight:700;background:#F1F1F3;color:var(--ink2);padding:2px 8px;border-radius:20px')}>{vm.endedCount}</span>
-            <span style={S('font-size:12.5px;color:var(--ink3)')}>odhlášená z pojištění</span>
+      <EndedVehiclesTable rows={vm.endedRows} count={vm.endedCount} />
+    </div>
+  )
+}
+
+/* ============================ UKONČENÁ VOZIDLA (sdílená tabulka) ============================ */
+function EndedVehiclesTable({ rows, count, showPark = true }) {
+  if (!count) return null
+  return (
+    <div style={S('margin-top:22px')}>
+      <div style={S('display:flex;align-items:center;gap:9px;margin-bottom:12px')}>
+        <span style={S('font-size:15px;font-weight:700')}>Ukončená vozidla</span>
+        <span style={S('font-size:11.5px;font-weight:700;background:#F1F1F3;color:var(--ink2);padding:2px 8px;border-radius:20px')}>{count}</span>
+        <span style={S('font-size:12.5px;color:var(--ink3)')}>odhlášená z pojištění</span>
+      </div>
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
+        <HScroll minW={showPark ? 1020 : 880}>
+          <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
+            <div style={S('width:46px;flex-shrink:0')}></div>
+            <div style={S('width:96px;flex-shrink:0')}>SPZ</div>
+            <div style={S('flex:1;min-width:0')}>Vozidlo</div>
+            {showPark && <div style={S('width:120px')}>Park</div>}
+            <div style={S('width:110px')}>Pojišťovna</div>
+            <div style={S('width:96px')}>Ukončeno</div>
+            <div style={S('width:150px')}>Důvod</div>
+            <div style={S('width:116px')}>Stav</div>
           </div>
-          <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
-            <HScroll minW={1020}>
-              <div style={S('display:flex;align-items:center;gap:14px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
-                <div style={S('width:46px;flex-shrink:0')}></div>
-                <div style={S('width:96px;flex-shrink:0')}>SPZ</div>
-                <div style={S('flex:1;min-width:0')}>Vozidlo</div>
-                <div style={S('width:120px')}>Park</div>
-                <div style={S('width:110px')}>Pojišťovna</div>
-                <div style={S('width:96px')}>Ukončeno</div>
-                <div style={S('width:150px')}>Důvod</div>
-                <div style={S('width:116px')}>Stav</div>
-              </div>
-              {vm.endedRows.map((v) => (
-                <Hov key={v.id} onClick={v.onClick} base="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;opacity:.82" hover="background:#FAFAFA;opacity:1">
-                  <div style={S('width:46px;height:34px;border-radius:7px;background:#F1F1F3;color:var(--ink3);display:flex;align-items:center;justify-content:center;flex-shrink:0')}>{ic('car', 17)}</div>
-                  <div style={S('width:96px;flex-shrink:0;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums')}>{v.plate}</div>
-                  <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{v.brand} {v.model}</div><div style={S('font-size:12px;color:var(--ink3)')}>{v.driver} · {v.year} · {v.fuel}</div></div>
-                  <div style={S('width:120px;font-size:12.5px;color:var(--ink2)')}>{v.fleetName}</div>
-                  <div style={S('width:110px;font-size:12.5px;color:var(--ink2)')}>{v.insurer}</div>
-                  <div style={S('width:96px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{v.endedDate}</div>
-                  <div style={S('width:150px;font-size:12.5px;color:var(--ink2)')}>{v.endReason}</div>
-                  <div style={S('width:116px')}><span style={S(v.chipStyle)}>{v.statusLabel}</span></div>
-                </Hov>
-              ))}
-            </HScroll>
-          </div>
-        </div>
-      )}
+          {rows.map((v) => (
+            <Hov key={v.id} onClick={v.onClick} base="display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;opacity:.82" hover="background:#FAFAFA;opacity:1">
+              <div style={S('width:46px;height:34px;border-radius:7px;background:#F1F1F3;color:var(--ink3);display:flex;align-items:center;justify-content:center;flex-shrink:0')}>{ic('car', 17)}</div>
+              <div style={S('width:96px;flex-shrink:0;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums')}>{v.plate}</div>
+              <div style={S('flex:1;min-width:0')}><div style={S('font-size:13.5px;font-weight:600')}>{v.brand} {v.model}</div><div style={S('font-size:12px;color:var(--ink3)')}>{v.driver} · {v.year} · {v.fuel}</div></div>
+              {showPark && <div style={S('width:120px;font-size:12.5px;color:var(--ink2)')}>{v.fleetName}</div>}
+              <div style={S('width:110px;font-size:12.5px;color:var(--ink2)')}>{v.insurer}</div>
+              <div style={S('width:96px;font-size:12.5px;color:var(--ink2);font-variant-numeric:tabular-nums')}>{v.endedDate}</div>
+              <div style={S('width:150px;font-size:12.5px;color:var(--ink2)')}>{v.endReason}</div>
+              <div style={S('width:116px')}><span style={S(v.chipStyle)}>{v.statusLabel}</span></div>
+            </Hov>
+          ))}
+        </HScroll>
+      </div>
     </div>
   )
 }
