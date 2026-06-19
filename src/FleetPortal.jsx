@@ -648,6 +648,8 @@ export default function FleetPortal() {
             invoices.push({
               num, insurer, policy, amount: q, amountF: czk(q), issue: pr.issue, due: pr.due, paidDate, paid,
               statusLabel: meta.l, chipStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:${meta.c};background:${meta.bg};padding:3px 9px;border-radius:20px;white-space:nowrap`,
+              preview: ic('search', 16), download: ic('arrow', 16),
+              openPreview: () => setState({ docPreview: { kind: 'faktura', num, insurer, policy, amountF: czk(q), issue: pr.issue, due: pr.due, paidDate, paid, statusLabel: meta.l, statusColor: meta.c, statusBg: meta.bg, name: `${num}.pdf`, size: '78 kB', type: 'Faktura za pojištění' } }),
             })
           })
         })

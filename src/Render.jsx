@@ -212,6 +212,75 @@ function UnsubscribeModal({ vm }) {
   )
 }
 
+/* ============================ FAKTURA PREVIEW ============================ */
+function InvoicePreview({ vm }) {
+  const d = vm.docPreview
+  const vs = d.num.replace(/\D/g, '')
+  return (
+    <div onClick={vm.closeDocPreview} style={S('position:fixed;inset:0;z-index:80;background:rgba(15,15,20,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px')}>
+      <div onClick={(e) => e.stopPropagation()} style={S('width:700px;max-width:96vw;max-height:92vh;background:#fff;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.32);overflow:hidden;display:flex;flex-direction:column;animation:popIn .2s ease')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border)')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:var(--amber-soft);color:var(--amber);display:flex;align-items:center;justify-content:center')}>{ic('banknote', 18)}</div>
+          <div style={{ flex: 1, minWidth: 0 }}><div style={S('font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis')}>{d.name}</div><div style={S('font-size:12px;color:var(--ink3)')}>{d.type} · {d.size}</div></div>
+          <Hov as="span" base="display:flex;align-items:center;gap:6px;height:34px;padding:0 13px;border:1px solid var(--border2);border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('arrow', 15)} Stáhnout</Hov>
+          <span onClick={vm.closeDocPreview} style={S('color:var(--ink3);cursor:pointer;display:flex;margin-left:4px')}>{ic('close', 18)}</span>
+        </div>
+
+        <div style={S('flex:1;overflow-y:auto;background:#E9E9EC;padding:24px')}>
+          <div style={S('max-width:600px;margin:0 auto;background:#fff;border:1px solid #B8B8BE;box-shadow:0 6px 24px rgba(0,0,0,.12);padding:34px 38px;color:#111;position:relative')}>
+            {/* stamp */}
+            <div style={S(`position:absolute;top:30px;right:38px;transform:rotate(-8deg);border:2px solid ${d.statusColor};color:${d.statusColor};font-size:13px;font-weight:800;letter-spacing:1px;padding:5px 12px;border-radius:6px;text-transform:uppercase;opacity:.85`)}>{d.statusLabel}</div>
+
+            <div style={S('display:flex;align-items:flex-start;gap:12px;margin-bottom:6px')}>
+              <InsurerLogo name={d.insurer} size={44} />
+              <div><div style={S('font-size:15px;font-weight:800')}>{d.insurer}</div><div style={S('font-size:11px;color:var(--ink3)')}>Pojistitel · dodavatel</div></div>
+            </div>
+            <div style={S('font-size:22px;font-weight:800;letter-spacing:-.3px;margin:18px 0 2px')}>Faktura — daňový doklad</div>
+            <div style={S('font-size:13px;color:var(--ink2);margin-bottom:22px')}>č. <span style={S('font-weight:700;font-variant-numeric:tabular-nums')}>{d.num}</span></div>
+
+            <div style={S('display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px')}>
+              <div style={S('border:1px solid var(--border);border-radius:8px;padding:12px 14px')}>
+                <div style={S('font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px')}>Dodavatel</div>
+                <div style={S('font-size:13px;font-weight:700')}>{d.insurer}</div>
+                <div style={S('font-size:11.5px;color:var(--ink2);margin-top:2px;line-height:1.5')}>Praha, Česká republika<br />IČO 45272956 · DIČ CZ45272956</div>
+              </div>
+              <div style={S('border:1px solid var(--border);border-radius:8px;padding:12px 14px')}>
+                <div style={S('font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px')}>Odběratel</div>
+                <div style={S('font-size:13px;font-weight:700')}>Louda Auto a.s.</div>
+                <div style={S('font-size:11.5px;color:var(--ink2);margin-top:2px;line-height:1.5')}>Jankovcova 1827/41, 170 00 Praha 7<br />IČO 25612348 · DIČ CZ25612348</div>
+              </div>
+            </div>
+
+            <div style={S('display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:22px')}>
+              {[['Variabilní symbol', vs], ['Datum vystavení', d.issue], ['Datum splatnosti', d.due], ['Forma úhrady', 'Bankovní převod'], ['Číslo účtu', '198452367/0800'], ['Pojistná smlouva', d.policy]].map((r, i) => (
+                <div key={i}><div style={S('font-size:9.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.2px')}>{r[0]}</div><div style={S('font-size:12.5px;font-weight:600;margin-top:1px;font-variant-numeric:tabular-nums')}>{r[1]}</div></div>
+              ))}
+            </div>
+
+            <div style={S('border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:18px')}>
+              <div style={S('display:flex;justify-content:space-between;padding:10px 14px;background:#FBFBFC;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase')}>
+                <span>Popis plnění</span><span>Částka</span>
+              </div>
+              <div style={S('display:flex;justify-content:space-between;gap:14px;padding:12px 14px;font-size:12.5px')}>
+                <span>Předpis pojistného k pojistné smlouvě č. {d.policy}<br /><span style={S('font-size:11px;color:var(--ink3)')}>Pojištění je osvobozeno od DPH dle § 55 zákona o DPH</span></span>
+                <span style={S('font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap')}>{d.amountF}</span>
+              </div>
+            </div>
+
+            <div style={S('display:flex;justify-content:flex-end')}>
+              <div style={S('display:flex;align-items:center;gap:16px;padding:12px 18px;background:#0F1115;border-radius:10px;color:#fff')}>
+                <span style={S('font-size:12.5px;color:#A1A1AA')}>Celkem k úhradě</span>
+                <span style={S('font-size:18px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums')}>{d.amountF}</span>
+              </div>
+            </div>
+            {d.paid && <div style={S('font-size:11.5px;color:var(--ink3);margin-top:14px;text-align:right')}>Uhrazeno dne {d.paidDate}</div>}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ============================ CLAIM DOCUMENT PREVIEW ============================ */
 function ClaimDocPreview({ vm }) {
   const d = vm.docPreview
@@ -447,6 +516,7 @@ function DocPreviewModal({ vm }) {
   if (d.kind === 'zk') return <GreenCardPreview vm={vm} />
   if (d.kind === 'orv') return <OrvPreview vm={vm} />
   if (d.kind === 'claimdoc') return <ClaimDocPreview vm={vm} />
+  if (d.kind === 'faktura') return <InvoicePreview vm={vm} />
   const headings = { Smlouva: 'Pojistná smlouva', IPID: 'Informační dokument o pojistném produktu', VPP: 'Všeobecné pojistné podmínky', Záznam: 'Záznam z jednání', Dodatek: 'Dodatek k pojistné smlouvě' }
   const heading = headings[d.type] || d.type
   const line = (w) => <div style={S(`height:9px;border-radius:4px;background:#ECECEE;width:${w}`)}></div>
@@ -1609,7 +1679,7 @@ function DocumentsInvoices({ vm }) {
       </div>
 
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden')}>
-        <HScroll minW={1080}>
+        <HScroll minW={1160}>
           <div style={S('display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);background:#FBFBFC;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px')}>
             <div style={S('width:124px;flex-shrink:0')}>Číslo faktury</div>
             <div style={S('flex:1;min-width:0')}>Pojišťovna</div>
@@ -1619,6 +1689,7 @@ function DocumentsInvoices({ vm }) {
             <div style={S('width:84px')}>Splatnost</div>
             <div style={S('width:84px')}>Uhrazeno</div>
             <div style={S('width:104px')}>Stav</div>
+            <div style={S('width:56px;text-align:right')}>Doklad</div>
           </div>
           {dd.invoices.map((iv, i) => (
             <Hov key={i} base="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border)" hover="background:#FAFAFA">
@@ -1630,6 +1701,7 @@ function DocumentsInvoices({ vm }) {
               <div style={S('width:84px;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums')}>{iv.due}</div>
               <div style={S(`width:84px;font-size:12px;font-variant-numeric:tabular-nums;color:${iv.paid ? 'var(--ink2)' : 'var(--ink3)'}`)}>{iv.paidDate}</div>
               <div style={S('width:104px')}><span style={S(iv.chipStyle)}>{iv.statusLabel}</span></div>
+              <div style={S('width:56px;display:flex;align-items:center;justify-content:flex-end;gap:10px;color:var(--ink3)')}><Hov as="span" onClick={iv.openPreview} base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Náhled">{iv.preview}</Hov><Hov as="span" base="cursor:pointer;display:flex" hover="color:var(--blue)" title="Stáhnout">{iv.download}</Hov></div>
             </Hov>
           ))}
         </HScroll>
