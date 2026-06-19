@@ -1376,6 +1376,55 @@ function ClaimDetail({ vm }) {
         </div>
       </div>
 
+      {/* AI nástroj */}
+      <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px')}>
+        <div style={S('display:flex;align-items:center;gap:12px;padding:15px 20px;background:linear-gradient(135deg,#2563DB,#1A47A3);color:#fff')}>
+          <div style={S('width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center')}>{ic('sparkle', 20)}</div>
+          <div style={{ flex: 1 }}><div style={S('font-size:15px;font-weight:700')}>AI detekce poškození a rozpočet opravy</div><div style={S('font-size:12px;color:rgba(255,255,255,.8)')}>Automatická analýza z fotodokumentace</div></div>
+          <span style={S('font-size:11px;font-weight:700;background:rgba(255,255,255,.18);padding:4px 10px;border-radius:20px')}>Fleet AI · beta</span>
+        </div>
+        <div style={S('display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0')}>
+          {/* detekce */}
+          <div style={S('padding:20px;border-right:1px solid var(--border)')}>
+            <div style={S('display:flex;align-items:center;justify-content:space-between;margin-bottom:14px')}>
+              <div style={S('font-size:13.5px;font-weight:700')}>Detekovaná poškození</div>
+              <span style={S('font-size:11.5px;font-weight:700;color:var(--blue);background:var(--blue-soft);padding:3px 9px;border-radius:20px')}>přesnost {cd.ai.confidence} %</span>
+            </div>
+            <div style={S('display:flex;flex-direction:column;gap:13px')}>
+              {cd.ai.parts.map((p, i) => (
+                <div key={i}>
+                  <div style={S('display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px')}>
+                    <div style={S('min-width:0')}><div style={S('font-size:13px;font-weight:600')}>{p.name}</div><div style={S('font-size:11.5px;color:var(--ink3)')}>{p.severity}</div></div>
+                    <span style={S('font-size:12px;font-weight:700;color:var(--ink2);font-variant-numeric:tabular-nums;flex-shrink:0')}>{p.confidence} %</span>
+                  </div>
+                  <div style={S('height:5px;background:#F1F1F3;border-radius:3px;overflow:hidden')}><div style={S(`height:100%;width:${p.confidence}%;background:${p.barColor};border-radius:3px`)}></div></div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* rozpočet */}
+          <div style={S('padding:20px')}>
+            <div style={S('font-size:13.5px;font-weight:700;margin-bottom:14px')}>Rozpočet opravy (odhad)</div>
+            <div style={S('display:flex;flex-direction:column;gap:2px')}>
+              {cd.ai.items.map((it, i) => (
+                <div key={i} style={S('display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)')}>
+                  <div><div style={S('font-size:13px;font-weight:600')}>{it.k}</div>{it.d ? <div style={S('font-size:11.5px;color:var(--ink3)')}>{it.d}</div> : null}</div>
+                  <div style={S('font-size:13px;font-weight:700;font-variant-numeric:tabular-nums')}>{it.v}</div>
+                </div>
+              ))}
+            </div>
+            <div style={S('display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding:13px 15px;background:#0F1115;border-radius:11px;color:#fff')}>
+              <div style={S('font-size:12.5px;color:#A1A1AA')}>Odhadované náklady na opravu</div>
+              <div style={S('font-size:18px;font-weight:800;letter-spacing:-.5px')}>{cd.ai.totalF}</div>
+            </div>
+            <div style={S('display:flex;gap:8px;margin-top:12px;flex-wrap:wrap')}>
+              <span style={S('display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;background:var(--blue);color:#fff;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer')}>{ic('check', 15)} Použít odhad</span>
+              <Hov as="span" base="display:flex;align-items:center;gap:7px;height:36px;padding:0 14px;border:1px solid var(--border2);border-radius:9px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer" hover="background:#FAFAFA">{ic('refresh', 15)} Přepočítat</Hov>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* dokumenty */}
       <div style={S('background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px')}>
         <div style={S('padding:14px 18px;border-bottom:1px solid var(--border);font-size:15px;font-weight:700')}>Nahrané dokumenty</div>

@@ -868,6 +868,30 @@ export default function FleetPortal() {
       { t: c.shop !== '—' ? 'Oprava v servisu' : 'Likvidace události', date: addDays(c.date, 8), desc: c.shop !== '—' ? c.shop : 'Probíhá likvidace u pojišťovny', th: 70, icon: 'wrench' },
       { t: 'Výplata pojistného plnění', date: c.payout > 0 ? addDays(c.date, 12) : '—', desc: c.payout > 0 ? `Vyplaceno ${czk(c.payout)}` : 'Dosud nevyplaceno', th: 100, icon: 'banknote' },
     ]
+    const aiPartsDef = (() => {
+      const t = (c.type + ' ' + c.description).toLowerCase()
+      if (t.includes('sklo')) return [['Čelní / boční sklo', 'Prasklé', 97], ['Těsnění skla', 'Lehké poškození', 63]]
+      if (t.includes('krupob')) return [['Kapota', 'Mnohočetné promáčkliny', 95], ['Střecha', 'Promáčkliny', 92], ['Víko kufru', 'Promáčkliny', 86]]
+      if (t.includes('odcizení') || t.includes('kol')) return [['Kola z lehkých slitin (4×)', 'Odcizeno', 99], ['Brzdové třmeny', 'Poškrábáno', 58]]
+      if (t.includes('zvěř')) return [['Přední maska', 'Rozbitá', 96], ['Chladič', 'Deformovaný', 90], ['Kapota', 'Promáčknutá', 83]]
+      if (t.includes('parkov') || t.includes('třetí')) return [['Zadní nárazník', 'Promáčknutý', 94], ['Páté dveře', 'Škrábance + promáčklina', 81]]
+      return [['Přední nárazník', 'Deformovaný', 96], ['Kapota', 'Promáčknutá', 91], ['Levý světlomet', 'Rozbitý', 88], ['Chladič', 'Poškozený', 74]]
+    })()
+    const e = c.estimate
+    const dily = Math.round(e * 0.56 / 100) * 100
+    const prace = Math.round(e * 0.30 / 100) * 100
+    const lak = e - dily - prace
+    const ai = {
+      confidence: Math.round(aiPartsDef.reduce((a, p) => a + p[2], 0) / aiPartsDef.length),
+      parts: aiPartsDef.map((p) => ({ name: p[0], severity: p[1], confidence: p[2], barColor: p[2] >= 90 ? 'var(--star)' : p[2] >= 70 ? 'var(--amber)' : 'var(--ink3)' })),
+      items: [
+        { k: 'Náhradní díly', d: `${aiPartsDef.length} položek`, v: czk(dily) },
+        { k: 'Práce (demontáž / montáž)', d: `${Math.max(1, Math.round(prace / 750))} NH`, v: czk(prace) },
+        { k: 'Lakování a materiál', d: '', v: czk(lak) },
+      ],
+      totalF: czk(e),
+    }
+
     let currentSet = false
     const timeline = stepDefs.map((s) => {
       const done = c.progress >= s.th
@@ -882,7 +906,7 @@ export default function FleetPortal() {
         id: c.id, type: c.type, statusLabel: cm.label,
         chipStyle: `display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:${cm.c};background:${cm.bg};padding:4px 11px;border-radius:20px;white-space:nowrap`,
         risk: c.risk, riskLabel: riskFull, riskStyle: `display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;color:${rm.c};background:${rm.bg};padding:4px 10px;border-radius:6px;white-space:nowrap`,
-        facts, description: c.description, location: c.location, docs, photoCount: 6, timeline,
+        facts, description: c.description, location: c.location, docs, photoCount: 6, timeline, ai,
         estimateF: czk(c.estimate), payoutF: c.payout > 0 ? czk(c.payout) : '—', paid: c.payout > 0, progress: c.progress,
         plate: v.plate, brand: v.brand, model: v.model,
         goVehicle: () => openVehicle(c.vId), goBack: () => navigate('claims'),
