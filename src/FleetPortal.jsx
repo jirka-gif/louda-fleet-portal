@@ -342,31 +342,25 @@ export default function FleetPortal() {
 
   const dashboardVM = () => {
     if (state.route !== 'dashboard') return {}
+    const totalPremium = fleetsData.reduce((a, f) => a + f.premium, 0)
+    const totalVehicles = fleetsData.reduce((a, f) => a + f.vehicles, 0)
+    const premiumMil = (totalPremium / 1e6).toFixed(2).replace('.', ',') + ' mil.'
     const khero = [
-      { icon: ic('fleets', 20), iconBg: 'var(--blue-soft)', iconColor: 'var(--blue)', value: '6', label: 'Vozové parky', sub: 'aktivních parků', delta: '+1 letos', deltaStyle: 'font-size:11.5px;font-weight:700;color:var(--blue);background:var(--blue-soft);padding:3px 8px;border-radius:20px' },
-      { icon: ic('car', 20), iconBg: '#F1F1F3', iconColor: '#3F3F46', value: '312', label: 'Vozidla celkem', sub: 'pojištěných vozidel', delta: '+18 / Q', deltaStyle: 'font-size:11.5px;font-weight:700;color:var(--green);background:var(--green-soft);padding:3px 8px;border-radius:20px' },
-      { icon: ic('shield', 20), iconBg: 'var(--star-soft)', iconColor: 'var(--star)', value: '14,91 mil.', label: 'Roční pojistné', sub: 'předepsané ročně (Kč)', delta: '−11 % r/r', deltaStyle: 'font-size:11.5px;font-weight:700;color:var(--green);background:var(--green-soft);padding:3px 8px;border-radius:20px' },
-      { icon: ic('alert', 20), iconBg: 'var(--amber-soft)', iconColor: 'var(--amber)', value: '23', label: 'Aktivní události', sub: '9 otevřených', delta: '+3 / měsíc', deltaStyle: 'font-size:11.5px;font-weight:700;color:var(--star);background:var(--star-soft);padding:3px 8px;border-radius:20px' },
+      { icon: ic('fleets', 20), iconBg: 'var(--blue-soft)', iconColor: 'var(--blue)', value: String(fleetsData.length), label: 'Vozové parky', sub: 'aktivní pobočky' },
+      { icon: ic('car', 20), iconBg: '#F1F1F3', iconColor: '#3F3F46', value: String(totalVehicles), label: 'Vozidla', sub: 'pojištěných vozidel' },
+      { icon: ic('shield', 20), iconBg: 'var(--star-soft)', iconColor: 'var(--star)', value: premiumMil, label: 'Roční pojistné', sub: 'předepsané ročně (Kč)' },
+      { icon: ic('alert', 20), iconBg: 'var(--amber-soft)', iconColor: 'var(--amber)', value: '9', label: 'Otevřené škody', sub: '47 uzavřených letos' },
     ]
-    const kstat = [
-      { label: 'Měsíční pojistné', value: '1,24 mil.', accent: 'var(--ink)' },
-      { label: 'Obnovy do 30 dnů', value: '34', accent: 'var(--amber)' },
-      { label: 'Rizikové skóre parku', value: '68/100', accent: 'var(--ink)' },
-      { label: 'Úspora vs. loni', value: '1,84 mil.', accent: 'var(--green)' },
-      { label: 'Ø pojistné / vozidlo', value: '47 788', accent: 'var(--ink)' },
-      { label: 'Vozidla bez krytí', value: '41', accent: 'var(--star)' },
+    const claimStats = [
+      { label: 'Otevřené', value: '9', color: 'var(--star)' },
+      { label: 'Uzavřené (rok)', value: '47', color: 'var(--ink)' },
+      { label: 'Vyplaceno (rok)', value: '1,24 mil.', color: 'var(--ink)' },
     ]
-    const pv = [1.05, 1.07, 1.09, 1.10, 1.13, 1.15, 1.18, 1.17, 1.20, 1.22, 1.21, 1.24]
-    const pp = linePath(pv, 600, 180, 16)
     const cb = [3, 2, 4, 1, 3, 2, 5, 3, 4, 2, 3, 2]; const cbMax = Math.max(...cb)
     const claimBars = cb.map((v, i) => ({ h: Math.round(v / cbMax * 100) + '%', color: i >= 10 ? 'var(--star)' : '#E3B7BE', label: MONTHS[i][0] }))
     let acc = 0; const segs = insurersData.map((i) => { const a = acc; acc += i.pct / 100 * 360; return `${i.color} ${a}deg ${acc}deg` })
     const insurerDonut = `conic-gradient(${segs.join(',')})`
-    const brands = brandsData.map((b) => ({ ...b, w: Math.round(b.pct / 40 * 100) + '%' }))
-    const attention = vehiclesData.filter((v) => v.status !== 'active').slice(0, 5).map((v) => {
-      const m = statusMeta[v.status]
-      return { title: `${v.brand} ${v.model}`, sub: `${v.plate} · ${fleetName(v.fleet)} · ${v.driver}`, chip: m.label, chipStyle: statusChip(v.status), onClick: () => openVehicle(v.id) }
-    })
+    const insurers = insurersData.map((i) => ({ ...i, volF: (totalPremium * i.pct / 100 / 1e6).toFixed(2).replace('.', ',') + ' mil.' }))
     const activity = [
       { actor: 'Škoda Octavia (5SK 8841)', action: 'přidána do parku Praha – Centrála', time: 'před 2 h', color: 'var(--blue)' },
       { actor: 'BMW 320d (2BM 5567)', action: 'nahlášena pojistná událost – parkovací škoda', time: 'před 5 h', color: 'var(--star)' },
@@ -376,7 +370,7 @@ export default function FleetPortal() {
       { actor: 'Škoda Fabia (3FA 1180)', action: 'vyřazena z parku Brno', time: 'před 2 dny', color: '#A1A1AA' },
       { actor: 'Hyundai Tucson (6HY 3320)', action: 'přidáno havarijní pojištění (Generali)', time: 'před 3 dny', color: 'var(--amber)' },
     ]
-    return { khero, kstat, premiumLine: pp.line, premiumArea: pp.area, months: MONTHS, claimBars, insurerDonut, insurers: insurersData, brands, attention, activity }
+    return { khero, claimStats, months: MONTHS, claimBars, insurerDonut, insurers, activity }
   }
 
   const fleetsVM = () => {
