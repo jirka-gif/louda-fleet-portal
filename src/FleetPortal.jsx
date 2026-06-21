@@ -60,6 +60,13 @@ const fleetInsurerPolicy = (insurer, fleetId) => {
   return `${base} ${s.slice(0, 3)} ${s.slice(3)}`
 }
 const lrColorFor = (lr) => (lr <= 30 ? 'var(--green)' : lr <= 45 ? 'var(--amber)' : 'var(--star)')
+// Datum výročí smlouvy — nejbližší výroční datum počátku po dnešku
+const parseCz = (s) => { const p = String(s).replace(/\s/g, '').split('.').map(Number); return new Date(p[2], p[1] - 1, p[0]) }
+const fmtCz = (dt) => `${dt.getDate()}. ${dt.getMonth() + 1}. ${dt.getFullYear()}`
+const nextAnniv = (start, today) => { const d = parseCz(start); let c = new Date(today.getFullYear(), d.getMonth(), d.getDate()); if (c < today) c = new Date(today.getFullYear() + 1, d.getMonth(), d.getDate()); return c }
+// Zprostředkovatel pojištění (makléř)
+const BROKER = { name: 'IS Group, spol. s r.o.', role: 'Pojišťovací makléř', reg: 'ČNB, reg. č. 197542PM', ico: '264 18 920', person: 'Martin Kovář', email: 'martin.kovar@isgroup.cz', phone: '+420 222 119 350' }
+const POJISTNIK = { name: 'Louda Auto a.s.', ico: '256 12 348' }
 
 export default function FleetPortal() {
   const [state, setStateRaw] = useState({
@@ -261,7 +268,7 @@ export default function FleetPortal() {
       nav, pageTitle: title, pageSubtitle: sub, route: r,
       isDashboard: r === 'dashboard', isFleets: r === 'fleets', isFleetDetail: r === 'fleet-detail',
       isVehicles: r === 'vehicles', isVehicleDetail: r === 'vehicle-detail',
-      isInsurance: r === 'insurance', isClaims: r === 'claims', isDocuments: r === 'documents', isAnalytics: r === 'analytics', isContacts: r === 'contacts', isSettings: r === 'settings',
+      isInsurance: r === 'insurance', isInsuranceDetail: r === 'insurance-detail', isClaims: r === 'claims', isDocuments: r === 'documents', isAnalytics: r === 'analytics', isContacts: r === 'contacts', isSettings: r === 'settings',
       isDocumentsDetail: r === 'documents-detail',
       openDocCat: (cat) => navigate('documents-detail', { docCat: cat, docOpen: {} }), goDocuments: () => navigate('documents'),
       docPreview: state.docPreview, closeDocPreview: () => setState({ docPreview: null }),
@@ -644,33 +651,100 @@ export default function FleetPortal() {
     }
   }
 
+  // Jedna flotilová pojistná smlouva = jeden vozový park (vedoucí pojistitel)
+  const contractFor = (f, today) => {
+    const annivDate = nextAnniv(f.policyStart || '1. 1. 2025', today)
+    const days = Math.round((annivDate - today) / 86400000)
+    const soon = days <= 30
+    const activeCount = vehiclesData.filter((v) => v.fleet === f.id && v.status !== 'ended').length
+    const lr = f.lossRatio ?? 0
+    return {
+      id: f.id, insurer: f.insurers[0], coInsurer: f.insurers[1] || null,
+      parkName: f.name, policy: f.policy || '—',
+      premium: f.premium, premiumF: czk(f.premium),
+      policyStart: f.policyStart || '—', anniversary: fmtCz(annivDate), annivDays: days,
+      vehicleCount: activeCount, lossRatio: lr, lrColor: lrColorFor(lr),
+      soon, statusLabel: soon ? 'Výročí do 30 dnů' : 'Aktivní',
+      chipStyle: soon
+        ? 'display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:var(--amber);background:var(--amber-soft);padding:3px 9px;border-radius:20px;white-space:nowrap'
+        : 'display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:var(--green);background:var(--green-soft);padding:3px 9px;border-radius:20px;white-space:nowrap',
+    }
+  }
+
   const insuranceVM = () => {
     if (state.route !== 'insurance') return {}
+    const today = new Date(2026, 5, 19)
+    const contracts = allFleets.map((f) => ({ ...contractFor(f, today), onClick: () => navigate('insurance-detail', { fleetId: f.id }) })).sort((a, b) => b.premium - a.premium)
+    const totalPremium = contracts.reduce((a, b) => a + b.premium, 0)
+    const soonN = contracts.filter((c) => c.annivDays <= 30).length
+    const avgLr = contracts.length ? Math.round(contracts.reduce((a, b) => a + b.lossRatio, 0) / contracts.length) : 0
     const insStats = [
-      { label: 'Předepsané pojistné', value: '14,91 mil.', sub: 'Kč ročně', color: 'var(--ink)' },
-      { label: 'Aktivních smluv', value: '1 174', sub: 'napříč 6 parky', color: 'var(--ink)' },
-      { label: 'Obnovy do 30 dnů', value: '34', sub: 'vyžadují akci', color: 'var(--amber)' },
-      { label: 'Možná úspora', value: '320 tis.', sub: 'konsolidací krytí', color: 'var(--green)' },
+      { label: 'Předepsané pojistné', value: (totalPremium / 1e6).toFixed(2).replace('.', ',') + ' mil.', sub: 'Kč ročně', color: 'var(--ink)' },
+      { label: 'Aktivních smluv', value: String(contracts.length), sub: 'flotilových smluv', color: 'var(--ink)' },
+      { label: 'Výročí do 30 dnů', value: String(soonN), sub: 'vyžadují akci', color: soonN ? 'var(--amber)' : 'var(--ink)' },
+      { label: 'Ø škodní průběh', value: avgLr + ' %', sub: 'napříč smlouvami', color: lrColorFor(avgLr) },
     ]
-    const gb = state.selected.insGroup || 'fleet'
-    const insGroupTabs = [['fleet', 'Podle parku'], ['insurer', 'Podle pojišťovny'], ['product', 'Podle produktu']].map(([id, label]) => { const on = gb === id; return { label, onClick: () => setState((s) => ({ selected: { ...s.selected, insGroup: id } })), style: `padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:600;cursor:pointer;color:${on ? 'var(--ink)' : 'var(--ink3)'};background:${on ? '#fff' : 'transparent'};box-shadow:${on ? '0 1px 3px rgba(0,0,0,.08)' : 'none'}` } })
-    const prods = [
-      { product: 'Povinné ručení', scope: 'Flotilová smlouva', policy: 'PR-FLEET-01', insurer: 'Kooperativa', premiumF: '4,2 mil.', renewal: '1. 1. 2027', status: 'active' },
-      { product: 'Havarijní pojištění', scope: 'All-risk flotila', policy: 'HAV-FLEET-01', insurer: 'Kooperativa', premiumF: '5,8 mil.', renewal: '1. 1. 2027', status: 'active' },
-      { product: 'GAP + Asistence', scope: '248 vozidel', policy: 'GAP-FLEET-02', insurer: 'Allianz', premiumF: '1,1 mil.', renewal: '14. 9. 2026', status: 'soon' },
-      { product: 'Pojištění skel', scope: 'Celá flotila', policy: 'SKL-FLEET-01', insurer: 'Generali', premiumF: '640 tis.', renewal: '30. 9. 2026', status: 'active' },
-    ]
-    const pIcon = (n) => n.includes('Povinné') ? ic('shield', 16) : n.includes('Havarijní') ? ic('car', 16) : n.includes('skel') ? ic('glass', 16) : ic('refresh', 16)
-    const groupsByFleet = fleetsData.slice(0, 3).map((f, i) => ({
-      name: f.name, color: ['#2058C9', '#16A34A', '#C2780C'][i], count: Math.round(f.vehicles * 3.7), premium: (f.premium / 1000000).toFixed(2).replace('.', ',') + ' mil. Kč',
-      rows: prods.map((p) => ({ ...p, bg: 'var(--star-soft)', color: 'var(--star)', icon: pIcon(p.product), statusLabel: statusMeta[p.status].label, chipStyle: statusChip(p.status) })).slice(0, 3),
-    }))
     const insExport = {
-      filename: 'pojisteni-smlouvy', title: 'Pojištění – smlouvy',
-      columns: [{ key: 'park', label: 'Park' }, { key: 'produkt', label: 'Produkt' }, { key: 'rozsah', label: 'Rozsah' }, { key: 'smlouva', label: 'Smlouva' }, { key: 'pojistovna', label: 'Pojišťovna' }, { key: 'pojistne', label: 'Pojistné' }, { key: 'obnova', label: 'Obnova' }, { key: 'stav', label: 'Stav' }],
-      rows: groupsByFleet.flatMap((g) => g.rows.map((r) => ({ park: g.name, produkt: r.product, rozsah: r.scope, smlouva: r.policy, pojistovna: r.insurer, pojistne: r.premiumF, obnova: r.renewal, stav: r.statusLabel }))),
+      filename: 'pojistne-smlouvy', title: 'Pojistné smlouvy',
+      columns: [{ key: 'pojistovna', label: 'Pojišťovna' }, { key: 'smlouva', label: 'Číslo smlouvy' }, { key: 'park', label: 'Vozový park' }, { key: 'vozidla', label: 'Vozidla' }, { key: 'pojistne', label: 'Roční pojistné' }, { key: 'vyroci', label: 'Výročí' }, { key: 'skodni', label: 'Škodní průběh' }],
+      rows: contracts.map((c) => ({ pojistovna: c.insurer, smlouva: c.policy, park: c.parkName, vozidla: c.vehicleCount, pojistne: c.premiumF, vyroci: c.anniversary, skodni: c.lossRatio + ' %' })),
     }
-    return { insStats, insGroupTabs, insGroups: groupsByFleet, insExport }
+    return { contracts, insStats, insExport }
+  }
+
+  const insuranceDetailVM = () => {
+    if (state.route !== 'insurance-detail') return {}
+    const today = new Date(2026, 5, 19)
+    const f = allFleets.find((x) => x.id === state.fleetId) || allFleets[0]
+    const c = contractFor(f, today)
+    const insurer = c.insurer
+    const activeV = vehiclesData.filter((v) => v.fleet === f.id && v.status !== 'ended')
+    // bonifikace
+    const bonus = f.bonus || DEFAULT_BONUS
+    const lr = f.lossRatio ?? 0
+    const activeTier = bonus.find((x) => lr <= x.threshold)
+    const rebate = activeTier ? Math.round(f.premium * activeTier.rate / 100) : 0
+    // škody / frekvence
+    const fclaims = claimsData.filter((cc) => { const cv = vehiclesData.find((x) => x.id === cc.vId); return cv && cv.fleet === f.id })
+    const paidSum = fclaims.reduce((a, b) => a + (b.payout || 0), 0)
+    const freq = f.vehicles ? (f.claims / f.vehicles * 100) : 0
+    const claimRows = fclaims.map(buildClaimRow)
+    // facts
+    const facts = [
+      { k: 'Pojistník', v: POJISTNIK.name }, { k: 'IČO pojistníka', v: POJISTNIK.ico },
+      { k: 'Pojistitel', v: insurer }, { k: 'Číslo smlouvy', v: c.policy },
+      { k: 'Typ smlouvy', v: 'Flotilová pojistná smlouva' }, { k: 'Počátek pojištění', v: c.policyStart },
+      { k: 'Výročí smlouvy', v: c.anniversary }, { k: 'Frekvence placení', v: 'Roční' },
+      { k: 'Pojištěných vozidel', v: String(c.vehicleCount) }, { k: 'Roční pojistné', v: c.premiumF },
+      { k: 'Sjednaná krytí', v: 'POV, HAV, skla, asistence' }, { k: 'Typická spoluúčast', v: '5 % / min. 5 000 Kč' },
+    ]
+    if (c.coInsurer) facts.splice(3, 0, { k: 'Spolupojistitel', v: c.coInsurer })
+    // dokumenty
+    const contractSubject = { subjectTitle: POJISTNIK.name, subjectSub: `Flotilová smlouva č. ${c.policy}`, subjectIcon: ic('shield', 18) }
+    const docs = [
+      { name: `Pojistná smlouva ${c.policy.replace(/\s/g, '')}.pdf`, type: 'Smlouva', size: '248 kB', icon: ic('shield', 17), bg: 'var(--star-soft)', color: 'var(--star)', openPreview: () => setState({ docPreview: { name: `Pojistná smlouva ${c.policy}.pdf`, type: 'Smlouva', size: '248 kB', insurer, policy: c.policy, fleetName: f.name, date: c.policyStart } }) },
+      { name: `Všeobecné pojistné podmínky.pdf`, type: 'VPP', size: '512 kB', icon: ic('doc2', 17), bg: 'var(--blue-soft)', color: 'var(--blue)', openPreview: () => setState({ docPreview: { name: 'Všeobecné pojistné podmínky.pdf', type: 'VPP', size: '512 kB', insurer, policy: c.policy, fleetName: f.name, date: c.policyStart } }) },
+      { name: `IPID – informační dokument.pdf`, type: 'IPID', size: '96 kB', icon: ic('file', 17), bg: 'var(--blue-soft)', color: 'var(--blue)', openPreview: () => setState({ docPreview: { name: 'IPID – informační dokument.pdf', type: 'IPID', size: '96 kB', insurer, policy: c.policy, fleetName: f.name, date: c.policyStart } }) },
+      { name: `Informace o zprostředkovateli.pdf`, type: 'Informace o zprostředkovateli', size: '74 kB', icon: ic('user1', 17), bg: '#F1F1F3', color: 'var(--ink2)', openPreview: () => setState({ docPreview: { kind: 'vehdoc', ...contractSubject, name: 'Informace o zprostředkovateli.pdf', type: 'Informace o zprostředkovateli', size: '74 kB', title: 'Informace o zprostředkovateli pojištění', issuer: BROKER.name, accent: 'var(--blue)', rows: [['Makléř', BROKER.name], ['Registrace ČNB', BROKER.reg], ['IČO makléře', BROKER.ico], ['Odpovědná osoba', BROKER.person], ['Forma odměny', 'Provize od pojistitele'], ['Pojištění odpovědnosti', 'Sjednáno dle zákona č. 170/2018 Sb.']] } }) },
+      { name: `Souhlas se zpracováním OÚ (GDPR).pdf`, type: 'GDPR', size: '88 kB', icon: ic('shield', 17), bg: 'var(--green-soft)', color: 'var(--green)', openPreview: () => setState({ docPreview: { kind: 'vehdoc', ...contractSubject, name: 'Souhlas se zpracováním OÚ (GDPR).pdf', type: 'GDPR', size: '88 kB', title: 'Informace o zpracování osobních údajů (GDPR)', issuer: insurer + ' & ' + BROKER.name, accent: 'var(--green)', rows: [['Správce údajů', insurer], ['Zpracovatel', BROKER.name], ['Účel zpracování', 'Sjednání a správa pojištění'], ['Právní titul', 'Plnění smlouvy, čl. 6 GDPR'], ['Doba uchování', 'Po dobu trvání + 10 let'], ['Práva subjektu', 'Přístup, oprava, výmaz, námitka']] } }) },
+      { name: `Záznam z jednání.pdf`, type: 'Záznam z jednání', size: '132 kB', icon: ic('doc2', 17), bg: 'var(--amber-soft)', color: 'var(--amber)', openPreview: () => setState({ docPreview: { kind: 'vehdoc', ...contractSubject, name: 'Záznam z jednání.pdf', type: 'Záznam z jednání', size: '132 kB', title: 'Záznam z jednání (ZZJ)', issuer: BROKER.name, accent: 'var(--amber)', rows: [['Klient', POJISTNIK.name], ['Zprostředkovatel', BROKER.person], ['Předmět jednání', 'Flotilové pojištění vozidel'], ['Doporučený produkt', insurer + ' – flotila'], ['Požadavky klienta', 'POV + HAV all-risk, asistence'], ['Datum jednání', c.policyStart]] } }) },
+    ]
+    return {
+      idet: {
+        insurer, policy: c.policy, coInsurer: c.coInsurer, parkName: f.name,
+        premiumF: c.premiumF, anniversary: c.anniversary, vehicleCount: c.vehicleCount,
+        statusLabel: c.statusLabel, chipStyle: c.chipStyle,
+        facts, docs, broker: BROKER,
+        bonus: { set: !!activeTier, lossRatio: lr, lrColor: lrColorFor(lr), rate: activeTier ? activeTier.rate + ' %' : '—', threshold: activeTier ? activeTier.threshold : null, rebateF: activeTier ? czk(rebate) : '—', goDetail: () => navigate('bonifikace-detail', { fleetId: f.id }) },
+        loss: { lossRatio: lr, lrColor: lrColorFor(lr), claims: f.claims, freqF: freq.toFixed(1), paidF: czk(paidSum), vehicles: f.vehicles },
+        claimRows,
+        activeRows: activeV.map((v) => ({ id: v.id, plate: v.plate, brand: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel, vin: v.vin, prihlaska: v.prihlaska, insurer: v.insurer, premiumF: czk(v.premium), statusLabel: statusMeta[v.status].label, chipStyle: statusChip(v.status), onClick: () => openVehicle(v.id) })),
+        endedRows: vehiclesData.filter((v) => v.fleet === f.id && v.status === 'ended').map((v) => ({ id: v.id, plate: v.plate, brand: v.brand, model: v.model, driver: v.driver, year: v.year, fuel: v.fuel, fleetName: fleetName(v.fleet), insurer: v.insurer, premiumF: czk(v.premium), endedDate: v.endedDate, endReason: v.endReason, statusLabel: statusMeta[v.status].label, chipStyle: statusChip(v.status), onClick: () => openVehicle(v.id) })),
+        activeCount: activeV.length,
+        vehiclesExport: { filename: `vozidla-smlouva-${f.id}`, title: `Vozidla – smlouva ${c.policy}`, columns: [{ key: 'plate', label: 'SPZ' }, { key: 'znacka', label: 'Značka' }, { key: 'model', label: 'Model' }, { key: 'driver', label: 'Řidič' }, { key: 'insurer', label: 'Pojišťovna' }, { key: 'premium', label: 'Roční pojistné' }, { key: 'stav', label: 'Stav' }], rows: activeV.map((v) => ({ plate: v.plate, znacka: v.brand, model: v.model, driver: v.driver, insurer: v.insurer, premium: czk(v.premium), stav: statusMeta[v.status].label })) },
+        goBack: () => navigate('insurance'),
+      },
+    }
   }
 
   const claimsVM = () => {
@@ -1123,7 +1197,7 @@ export default function FleetPortal() {
 
   const vm = {
     ...shellVM(), ...dashboardVM(), ...fleetsVM(), ...fleetDetailVM(), ...vehiclesVM(), ...vehicleDetailVM(),
-    ...insuranceVM(), ...claimsVM(), ...claimDetailVM(), ...documentsVM(), ...documentsDetailVM(), ...analyticsVM(), ...contactsVM(), ...settingsVM(), ...bonifikaceVM(), ...bonifikaceDetailVM(), ...wizardVM(), ...addVehicleVM(),
+    ...insuranceVM(), ...insuranceDetailVM(), ...claimsVM(), ...claimDetailVM(), ...documentsVM(), ...documentsDetailVM(), ...analyticsVM(), ...contactsVM(), ...settingsVM(), ...bonifikaceVM(), ...bonifikaceDetailVM(), ...wizardVM(), ...addVehicleVM(),
   }
 
   return <Render vm={vm} />
